@@ -28,10 +28,8 @@ export default defineConfig({
 							{ label: "Deploy Your Site", slug: 'basics/example' },
 							{ label: "Migrate to Astro", slug: 'basics/example' },
 							{ label: "Tutorial: Build a Blog", slug: 'basics/example' },
-							],
-						},
-						{
-							label: 'Project setup',
+								{
+							label: 'Configuration',
 							items: [
 							{label: "The Astro Config File", link:'basics/example'},
 							{label: "Editor setup", link:'basics/example'},
@@ -40,10 +38,12 @@ export default defineConfig({
 							{label: "Dev Toolbar", link:'basics/example'},
 							],
 						},
+							],
+						},
+					
 						{
 							label: 'Add Integrations',
 							items: [
-								{label: "Astro Integrations", link:'basics/example'},
 								{
 									label: 'Popular Integrations',
 									items: [
@@ -53,11 +53,13 @@ export default defineConfig({
 										{label: "MDX", link:'basics/example'},
 									],
 								},
+								{label: "Integrations Guide", link:'basics/example'},
+								{label: "On-Demand Rendering Adapters", link:'basics/example'},
 							],
 						},
-						{ label:"Core Concepts", items: [
+						{ label:"Learn the Basics", items: [
 						  {
-							label: 'About Astro',
+							label: 'Core Concepts',
 							items: [
 								{label: "Why Astro?", link:'concepts/example'},
 								{label: "Astro Islands", link:'concepts/example'},
