@@ -36,6 +36,22 @@ export default defineConfig({
 								{label: "Dev Toolbar", link:'basics/example'},
 								],
 							},	
+							{
+								label: 'Integrations',
+								items: [
+									{label: "Adding Integrations", link:'basics/example'},
+									{
+										label: 'Popular',
+										collapsed: true,
+										items: [
+											{label: "Tailwind", link:'basics/example'},	
+											{label: "React", link:'basics/example'},
+											{label: "Sitemap", link:'basics/example'},
+											{label: "MDX", link:'basics/example'},
+										],
+									},
+								],
+							},
 							],
 						},
 						  {
@@ -63,16 +79,16 @@ export default defineConfig({
 				{
 					label: 'Build',
 					items: [
-					{ label:"Popular Topics", items: [
-						{ label: "Images", slug: 'basics/example' },
-						{ label: "Content Collections", link:'concepts/example'},
-						{ label: "CSS & Styling", slug: 'basics/example' },
-						{ label: "On-demand Rendering", slug: 'basics/example' },
-						{ label: "Scripts & Event Handling", slug: 'basics/example' },
-						{ label: "Markdown", slug: 'basics/example' },
-						{ label: "UI Frameworks", slug: 'basics/example' },
-						],
-					},
+						{ label:"Popular Topics", items: [
+							{ label: "Images", slug: 'basics/example' },
+							{ label: "Content Collections", link:'concepts/example'},
+							{ label: "CSS & Styling", slug: 'basics/example' },
+							{ label: "On-demand Rendering", slug: 'basics/example' },
+							{ label: "Scripts & Event Handling", slug: 'basics/example' },
+							{ label: "Markdown", slug: 'basics/example' },
+							{ label: "UI Frameworks", slug: 'basics/example' },
+							],
+						},
 					  {
 						label: 'Guides',
 						items: [
@@ -82,48 +98,52 @@ export default defineConfig({
 							{ label: "Middleware", link:'concepts/example'},
 							{ label: "Internationalization", link:'concepts/example'},
 							{ label: "Fonts", link:'concepts/example'},
+							{ label: "Imports", link:'concepts/example'},
+							{ label: "Endpoints", link:'concepts/example'},
 							{ label: "Data Fetching", link:'concepts/example'},
 							{ label: "Prefetch", link:'concepts/example'},
 							{ label: "Astro DB", link:'concepts/example'},
 							{ label: "Testing", link:'concepts/example'},
-							{ label: "Actions", link:'concepts/example'},
-							{ label: "Actions", link:'concepts/example'},
-							{ label: "Actions", link:'concepts/example'},
-							{ label: "Actions", link:'concepts/example'},
-						],
-					  },
-					  {
-						label: 'Use Cases',
-						items: [
-							{label: "E-commerce", link:'concepts/example'},
-							{label: "Auth", link:'concepts/example'},
-							{label: "Testing", link:'concepts/example'},
-		
+							{ label: "E-commerce", link:'concepts/example'},
+							{ label: "Auth", link:'concepts/example'},
+							{ label: "Troubleshooting", link:'concepts/example'},
 						],
 					  },
 					  {
 						label: 'Third-party guides',
 						items: [
+							{ label: 'CMS guides', link:'concepts/example'},
+							{ label: 'Backend Services', link:'concepts/example'},
+							{ label: 'Hosted Media & DAM', link:'concepts/example'},
 							{
-								label: 'CMS guides',
+								label: 'Popular',
+								collapsed: true,
 								items: [
-									{label: "E-commerce", link:'concepts/example'},
-									{label: "Auth", link:'concepts/example'},
-									{label: "Testing", link:'concepts/example'},
-				
+									{label: "Storyblok", link:'basics/example'},	
+									{label: "Cloudinary", link:'basics/example'},
+									{label: "Sentry", link:'basics/example'},
 								],
-							  },
-							  {
-								label: 'Backend Services',
-								items: [
-									{label: "E-commerce", link:'concepts/example'},
-									{label: "Auth", link:'concepts/example'},
-									{label: "Testing", link:'concepts/example'},
-				
-								],
-							  },
+							},
+							
 						],
 					  },
+					  {
+						label: 'How-to Recipes',
+						items: [
+							{label: "Astro Recipes", link:'basics/example'},
+							{
+								label: 'Popular',
+								collapsed: true,
+								items: [
+									{label: "Dynamically importing images", link:'basics/example'},	
+									{label: "Sharing state between islands", link:'basics/example'},
+									{label: "Add i18n features", link:'basics/example'},
+									{label: "Build your Astro site with Docker", link:'basics/example'},
+									{label: "Style rendered Markdown with Tailwind", link:'basics/example'},
+								],
+							},
+						],
+					},
 					],
 				},
 				{
