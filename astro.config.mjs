@@ -158,8 +158,8 @@ export default defineConfig({
 						// Each item here is one entry in the navigation menu.
 						{ label: "Upgrade Astro", slug: 'basics/example' },
 						{ label:"Reference Guides", items: [
-							{ label: "Configuration", slug: 'basics/example' },
-							{ label: "The Astro Global", slug: 'basics/example' },
+							{ label: "Configuration Reference", slug: 'basics/example' },
+							{ label: "Astro CLI Reference", slug: 'basics/example' },
 							{ label: "Directives Reference", slug: 'basics/example' },
 							{ label: "Built-in Components", slug: 'basics/example' },
 							{ label: "Error Reference", slug: 'basics/example' },
@@ -168,6 +168,7 @@ export default defineConfig({
 						{
 							label: 'Astro Modules',
 							items: [
+							{label: "The Astro Global", slug: 'basics/example' },
 							{label: "`astro:actions`", link:'basics/example'},
 							{label: "`astro:assets`", link:'basics/example'},
 							{label: "`astro:content`", link:'basics/example'},
