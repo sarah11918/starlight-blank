@@ -154,7 +154,40 @@ export default defineConfig({
 				},
 				{
 					label: 'Reference',
-					autogenerate: { directory: 'reference' },
+					items: [
+						// Each item here is one entry in the navigation menu.
+						{ label: "Upgrade Astro", slug: 'basics/example' },
+						{ label:"Reference Guides", items: [
+							{ label: "Configuration", slug: 'basics/example' },
+							{ label: "The Astro Global", slug: 'basics/example' },
+							{ label: "Directives Reference", slug: 'basics/example' },
+							{ label: "Built-in Components", slug: 'basics/example' },
+							{ label: "Error Reference", slug: 'basics/example' },
+							],
+						},
+						{
+							label: 'Astro Modules',
+							items: [
+							{label: "`astro:actions`", link:'basics/example'},
+							{label: "`astro:assets`", link:'basics/example'},
+							{label: "`astro:content`", link:'basics/example'},
+							{label: "`astro:i18n`", link:'basics/example'},
+							{label: "`astro:middleware`", link:'basics/example'},
+							{label: "`astro:transitions/client`", link:'basics/example'},
+							],
+						},
+						{
+							label: 'Other Development APIs',
+							items: [
+							{label: "Integrations API", link:'basics/example'},
+							{label: "Adapter API", link:'basics/example'},
+							{label: "Image Service API", link:'basics/example'},
+							{label: "Content Loader API", link:'basics/example'},
+							{label: "Dev Toolbar App API", link:'basics/example'},
+							{label: "Container API (Experimental)", link:'basics/example'},
+							],
+						},
+					],
 				},
 			],
 		}),
