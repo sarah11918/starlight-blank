@@ -25,14 +25,14 @@ export default defineConfig({
 						{ label: "What's New", slug: 'basics/example' },
 						{ label:"Getting Started", items: [
 							{ label: "Installation", slug: 'basics/example' },
-							{ label: "Deploy your site", slug: 'basics/example' },
+							{ label: "Deploy Your Site", slug: 'basics/example' },
 							{
 								label: 'Project setup',
 								items: [
-								{label: "Configuring Astro", link:'basics/example'},
+								{label: "The Astro Config File", link:'basics/example'},
 								{label: "Editor setup", link:'basics/example'},
 								{label: "TypeScript", link:'basics/example'},
-								{label: "Environment Variables", link:'basics/example'},
+								{label: "Environment variables", link:'basics/example'},
 								{label: "Dev Toolbar", link:'basics/example'},
 								],
 							},	
