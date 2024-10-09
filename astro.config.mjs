@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightUtils from "@lorenzo_lewis/starlight-utils";
+import starlightSidebarTopics from 'starlight-sidebar-topics';
 
 // https://astro.build/config
 export default defineConfig({
@@ -10,16 +11,20 @@ export default defineConfig({
 			social: {
 				github: 'https://github.com/withastro/starlight',
 			},
-			plugins: [
-				starlightUtils({
-				  multiSidebar: {
-					switcherStyle: "horizontalList",
-				  },
-				}),
-			  ],
-			sidebar: [
+			// plugins: [
+			// 	starlightUtils({
+			// 	  multiSidebar: {
+			// 		switcherStyle: "horizontalList",
+			// 	  },
+			// 	}),
+			//   ],
+			// sidebar: [
+				plugins: [
+					starlightSidebarTopics([
 				{
 					label: 'Start',
+					link: '/guides/example/',
+					icons: 'open-book',
 					items: [
 						// Each item here is one entry in the navigation menu.
 						{ label: "What's New", slug: 'basics/example' },
@@ -83,6 +88,8 @@ export default defineConfig({
 				},
 				{
 					label: 'Build',
+					link: '/recipes/example/',
+					icons: 'open-book',
 					items: [
 					
 					  {
@@ -149,13 +156,15 @@ export default defineConfig({
 									{label: "Style rendered Markdown with Tailwind", link:'basics/example'},
 								],
 							},
-							{label: "All Recipes", link:'basics/example'},
+							{label: "All Recipes", link:'recipes/example'},
 						],
 					},
 					],
 				},
 				{
 					label: 'Reference',
+					link: '/reference/example/',
+					icons: 'open-book',
 					items: [
 						// Each item here is one entry in the navigation menu.
 						{ label: "Upgrade Astro", slug: 'basics/example' },
@@ -193,6 +202,7 @@ export default defineConfig({
 					],
 				},
 			],
+		)],
 		}),
 	],
 });
