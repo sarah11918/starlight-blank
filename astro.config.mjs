@@ -24,7 +24,7 @@ export default defineConfig({
 				{
 					label: 'Start',
 					link: '/guides/example/',
-					icon: 'open-book',
+					icon: 'rocket',
 					items: [
 						// Each item here is one entry in the navigation menu.
 						{ label: "What's New", slug: 'basics/example' },
@@ -89,7 +89,7 @@ export default defineConfig({
 				{
 					label: 'Build',
 					link: '/recipes/example/',
-					icon: 'open-book',
+					icon: 'seti:powershell',
 					items: [
 					
 					  {
@@ -164,7 +164,7 @@ export default defineConfig({
 				{
 					label: 'Reference',
 					link: '/reference/example/',
-					icon: 'open-book',
+					icon: 'seti:info',
 					items: [
 						// Each item here is one entry in the navigation menu.
 						{ label: "Upgrade Astro", slug: 'basics/example' },
