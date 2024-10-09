@@ -7,9 +7,9 @@ import starlightSidebarTopics from 'starlight-sidebar-topics';
 export default defineConfig({
 	integrations: [
 		starlight({
-			title: 'My Docs',
+			title: 'Vertical Topic Links',
 			social: {
-				github: 'https://github.com/withastro/starlight',
+				github: 'https://github.com/sarah11918/starlight-blank/tree/vertical-links',
 			},
 			// plugins: [
 			// 	starlightUtils({
