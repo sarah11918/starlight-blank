@@ -6,9 +6,9 @@ import starlightUtils from "@lorenzo_lewis/starlight-utils";
 export default defineConfig({
 	integrations: [
 		starlight({
-			title: 'My Docs',
+			title: 'Docs Nav Tabs',
 			social: {
-				github: 'https://github.com/withastro/starlight',
+				github: 'https://github.com/sarah11918/starlight-blank/tree/triple-sidebar',
 			},
 			plugins: [
 				starlightUtils({
