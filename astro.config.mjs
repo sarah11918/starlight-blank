@@ -174,7 +174,7 @@ export default defineConfig({
 					items: [
 						// Each item here is one entry in the navigation menu.
 						{ label: "Upgrade Astro", slug: 'basics/example' },
-						{ label:"Reference Guides", items: [
+						{ label:"User Reference", items: [
 							{ label: "Configuration Reference", slug: 'basics/example' },
 							{ label: "Astro CLI Reference", slug: 'basics/example' },
 							{ label: "Directives Reference", slug: 'basics/example' },
