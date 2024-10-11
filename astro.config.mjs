@@ -33,7 +33,16 @@ export default defineConfig({
 							{ label: "Deploy Your Site", slug: 'basics/example' },
 							{ label: "Migrate to Astro", slug: 'basics/example' },
 							{ label: "Tutorial: Build a Blog", slug: 'basics/example' },
-							
+							{
+								label: 'Configuration',
+								items: [
+								{label: "The Astro Config File", link:'basics/example'},
+								{label: "Editor setup", link:'basics/example'},
+								{label: "TypeScript", link:'basics/example'},
+								{label: "Environment variables", link:'basics/example'},
+								{label: "Dev Toolbar", link:'basics/example'},
+								],
+							},
 							],
 						},
 					
@@ -76,24 +85,6 @@ export default defineConfig({
 					},
 						  { label: "Community Resources", slug: 'basics/example' },
 					],
-				},
-				{
-					label: 'Configure',
-					link: '/basics/example/',
-					icon: 'seti:bicep',
-					items: [
-						{
-							label: 'Configuration',
-							items: [
-							{label: "The Astro Config File", link:'basics/example'},
-							{label: "Editor setup", link:'basics/example'},
-							{label: "TypeScript", link:'basics/example'},
-							{label: "Environment variables", link:'basics/example'},
-							{label: "Dev Toolbar", link:'basics/example'},
-							],
-						},
-					]
-
 				},
 				{
 					label: 'Guides',
