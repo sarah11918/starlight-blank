@@ -21,31 +21,47 @@ export default defineConfig({
 			// sidebar: [
 				plugins: [
 					starlightSidebarTopics([
-				{
+				
+						{
 					label: 'Start',
 					link: '/guides/example/',
 					icon: 'rocket',
 					items: [
 						// Each item here is one entry in the navigation menu.
-						{ label: "What's New", slug: 'basics/example' },
+						
+						{ label: "Why Astro?", link:'concepts/example'},
+
 						{ label:"Getting Started", items: [
+							
 							{ label: "Installation", slug: 'basics/example' },
+							{ label: "Project Structure", link:'concepts/example'},
 							{ label: "Deploy Your Site", slug: 'basics/example' },
 							{ label: "Migrate to Astro", slug: 'basics/example' },
 							{ label: "Tutorial: Build a Blog", slug: 'basics/example' },
-							{
-								label: 'Configuration',
-								items: [
-								{label: "The Astro Config File", link:'basics/example'},
-								{label: "Editor setup", link:'basics/example'},
-								{label: "TypeScript", link:'basics/example'},
-								{label: "Environment variables", link:'basics/example'},
-								{label: "Dev Toolbar", link:'basics/example'},
-								],
-							},
 							],
 						},
-					
+						{
+							label: 'Configuration',
+							items: [
+							{label: "The Astro Config File", link:'basics/example'},
+							{label: "Editor setup", link:'basics/example'},
+							{label: "TypeScript", link:'basics/example'},
+							{label: "Environment variables", link:'basics/example'},
+							{label: "Dev Toolbar", link:'basics/example'},
+							],
+						},
+						{
+							label: 'Core Concepts',
+							items: [
+								
+								{ label: "Astro Islands", link:'concepts/example'},
+								{ label: "Components", link:'concepts/example'},
+								{ label: "Pages", link:'concepts/example'},
+								{ label: "Astro Template Syntax", link:'concepts/example'},
+								
+								
+							],
+						},
 						{
 							label: 'Add Integrations',
 							items: [
@@ -59,31 +75,10 @@ export default defineConfig({
 									],
 								},
 								{label: "Integrations Guide", link:'basics/example'},
-								{label: "On-Demand Rendering Adapters", link:'basics/example'},
 							],
 						},
-						{ label:"Learn the Basics", items: [
-						  {
-							label: 'Core Concepts',
-							items: [
-								{label: "Why Astro?", link:'concepts/example'},
-								{label: "Astro Islands", link:'concepts/example'},
-							],
-						  },
-						  {
-							label: 'Astro Basics',
-							items: [
-								{ label: "Project Structure", link:'concepts/example'},
-								{ label: "Components", link:'concepts/example'},
-								{ label: "Pages", link:'concepts/example'},
-								{ label: "Layouts", link:'concepts/example'},
-								{ label: "Astro Template Syntax", link:'concepts/example'},
-								{ label: "Rendering Modes", link:'concepts/example'},
-							],
-						  },
-						],
-					},
-						  { label: "Community Resources", slug: 'basics/example' },
+						  							
+						 { label: "Community", slug: 'basics/example' },
 					],
 				},
 				{
@@ -93,40 +88,48 @@ export default defineConfig({
 					items: [
 					
 					  {
-						label: 'Topic Guides',
+						label: 'Build with Astro',
 						items: [
-							{ label:"Popular Topics", items: [
-								{ label: "Images", slug: 'basics/example' },
-								{ label: "Content Collections", link:'concepts/example'},
-								{ label: "CSS & Styling", slug: 'basics/example' },
-								{ label: "On-demand Rendering", slug: 'basics/example' },
-								{ label: "Routing", slug: 'basics/example' },
-								{ label: "Scripts & Event Handling", slug: 'basics/example' },
+							{ label:"Add content to your site", collapsed:true, items: [
 								{ label: "Markdown", slug: 'basics/example' },
-								{ label: "UI Frameworks", slug: 'basics/example' },
+								{ label: "Content Collections", link:'concepts/example'},
+								{ label: "Images", slug: 'basics/example' },
+								{ label: "Data Fetching", link:'concepts/example'},
+								{ label: "Astro DB", link:'concepts/example'},
 								],
 							},
-							{ label:"More Topics", items: [
-							{ label: "View Transitions", link:'concepts/example'},
-							{ label: "Server Islands", link:'concepts/example'},
-							{ label: "Middleware", link:'concepts/example'},
-							{ label: "Internationalization", link:'concepts/example'},
-							{ label: "Fonts", link:'concepts/example'},
-							{ label: "Imports", link:'concepts/example'},
-							{ label: "Endpoints", link:'concepts/example'},
-							{ label: "Data Fetching", link:'concepts/example'},
-							{ label: "Prefetch", link:'concepts/example'},
-							{ label: "Astro DB", link:'concepts/example'},
-							{ label: "Testing", link:'concepts/example'},
-							{ label: "E-commerce", link:'concepts/example'},
-							{ label: "Auth", link:'concepts/example'},
+							{ label:"Build your UI", collapsed:true, items: [
+								
+								{ label: "CSS & Styling", slug: 'basics/example' },
+								{ label: "Fonts", link:'concepts/example'},				
+								{ label: "Scripts & Event Handling", slug: 'basics/example' },
+								{ label: "UI Frameworks", slug: 'basics/example' },
+								{ label: "Built-in Components", slug: 'basics/example' },
+								],
+							},
+							{ label:"Routing and Navigation", collapsed:true, items: [
+								
+								{ label: "Routing", slug: 'basics/example' },
+								{ label: "Endpoints", link:'concepts/example'},
+								{ label: "Prefetch", link:'concepts/example'},
+								{ label: "View Transitions", link:'concepts/example'},
+								{ label: "Internationalization", link:'concepts/example'},
+								],
+							},
+							{ label:"On-demand Rendering", collapsed:true, items: [
+								{ label: "Enabling on-demand rendering", slug: 'basics/example' },
+								{ label: "Adapters", link:'concepts/example'},
+								{ label: "Actions", link:'concepts/example'},
+								{ label: "Server Islands", link:'concepts/example'},
+								{ label: "Middleware", link:'concepts/example'},
+								],
+							},
 							{ label: "Troubleshooting", link:'concepts/example'},
-						],
-					},
 						],
 					  },
 					  {
-						label: 'Third-party guides',
+						label: 'Connect to third-party tools',
+						collapsed:true,
 						items: [
 							
 							{
@@ -140,6 +143,9 @@ export default defineConfig({
 							{ label: 'CMS guides', link:'concepts/example'},
 							{ label: 'Backend Services', link:'concepts/example'},
 							{ label: 'Hosted Media & DAM', link:'concepts/example'},
+							{ label: "E-commerce", link:'concepts/example'},
+							{ label: "Auth", link:'concepts/example'},
+							{ label: "Testing", link:'concepts/example'},
 						],
 					  },
 					  {
@@ -153,7 +159,7 @@ export default defineConfig({
 									{label: "Sharing state between islands", link:'basics/example'},
 									{label: "Add i18n features", link:'basics/example'},
 									{label: "Build your Astro site with Docker", link:'basics/example'},
-									{label: "Style rendered Markdown with Tailwind", link:'basics/example'},
+									{label: "Style rendered Markdown with Tailwind Typography", link:'basics/example'},
 								],
 							},
 							{label: "All Recipes", link:'recipes/example'},
@@ -172,8 +178,8 @@ export default defineConfig({
 							{ label: "Configuration Reference", slug: 'basics/example' },
 							{ label: "Astro CLI Reference", slug: 'basics/example' },
 							{ label: "Directives Reference", slug: 'basics/example' },
-							{ label: "Built-in Components", slug: 'basics/example' },
-							{ label: "Error Reference", slug: 'basics/example' },
+							{ label: "Imports", link:'concepts/example'},
+							{ label: "Error Reference", slug: 'basics/example' },						
 							],
 						},
 						{
@@ -197,9 +203,15 @@ export default defineConfig({
 							{label: "Content Loader API", link:'basics/example'},
 							{label: "Dev Toolbar App API", link:'basics/example'},
 							{label: "Container API (Experimental)", link:'basics/example'},
+							{label: "Publish to NPM", link:'basics/example'},
 							],
 						},
 					],
+				},
+				{
+					label: "CHANGELOG",
+					link: '/guides/example/',
+					icon: 'astro',
 				},
 			],
 		)],
