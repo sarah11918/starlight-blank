@@ -675,14 +675,14 @@ When you're ready to deploy, see our [Deploy with a Studio Connection guide](#de
    ```sh
    turso db show [database-name]
    ```
-   ```env
+   ```txt
    ASTRO_DB_REMOTE_URL=[your-database-url]
    ```
 5. Create a token to access your database, and use it as the environment variable `ASTRO_DB_APP_TOKEN`.
    ```sh
    turso db tokens create [database-name]
    ```
-   ```env
+   ```txt
    ASTRO_DB_APP_TOKEN=[your-app-token]
    ```
 6. Push your DB schema and metadata to the new Turso database.

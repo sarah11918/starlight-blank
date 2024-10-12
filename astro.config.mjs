@@ -24,7 +24,7 @@ export default defineConfig({
 				
 						{
 					label: 'Start',
-					link: '/guides/example/',
+					link: '/why-astro/',
 					icon: 'rocket',
 					items: [
 						// Each item here is one entry in the navigation menu.
@@ -84,7 +84,7 @@ export default defineConfig({
 				},
 				{
 					label: 'Guides',
-					link: '/recipes/example/',
+					link: '/guides/markdown-content/',
 					icon: 'open-book',
 					items: [
 					
@@ -158,6 +158,7 @@ export default defineConfig({
 									{label: "Dynamically importing images", link:'recipes/dynamically-importing-images'},	
 									{label: "Sharing state between islands", link:'recipes/sharing-state-islands'},
 									{label: "Add i18n features", link:'recipes/i18n'},
+									{label: "Add an RSS feed", link:'recipes/rss'},
 									{label: "Build your Astro site with Docker", link:'recipes/docker'},
 									{label: "Style rendered Markdown with Tailwind Typography", link:'recipes/tailwind-rendered-markdown'},
 								],
@@ -169,7 +170,7 @@ export default defineConfig({
 				},
 				{
 					label: 'Reference',
-					link: '/reference/example/',
+					link: '/reference/configuration-reference/',
 					icon: 'seti:info',
 					items: [
 						// Each item here is one entry in the navigation menu.
