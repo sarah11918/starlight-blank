@@ -1,0 +1,2698 @@
+---
+title: API Reference
+i18nReady: true
+---
+import Since from '~/components/Since.astro';
+import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro';
+import ReadMore from '~/components/ReadMore.astro';
+
+## `Astro` global
+
+The `Astro` global is available in all contexts in `.astro` files. It has the following functions:
+
+### `Astro.glob()`
+
+:::caution[Deprecated in v5.0]
+Use [Vite's `import.meta.glob`](https://vite.dev/guide/features.html#glob-import) to query project files. 
+
+`Astro.glob('../pages/post/*.md')` can be replaced with:
+
+`Object.values(await import.meta.glob('../pages/post/*.md', { eager: true }));`
+
+See the [imports guide](/en/guides/imports/#importmetaglob) for more information and usage.
+:::
+
+`Astro.glob()` is a way to load many local files into your static site setup.
+
+```astro
+---
+// src/components/my-component.astro
+const posts = await Astro.glob('../pages/post/*.md'); // returns an array of posts that live at ./src/pages/post/*.md
+---
+
+<div>
+{posts.slice(0, 3).map((post) => (
+  <article>
+    <h2>{post.frontmatter.title}</h2>
+    <p>{post.frontmatter.description}</p>
+    <a href={post.url}>Read more</a>
+  </article>
+))}
+</div>
+```
+
+`.glob()` only takes one parameter: a relative URL glob of which local files you'd like to import. It’s asynchronous, and returns an array of the exports from matching files.
+
+`.glob()` can't take variables or strings that interpolate them, as they aren't statically analyzable. (See [the imports guide](/en/guides/imports/#supported-values) for a workaround.) This is because `Astro.glob()` is a wrapper of Vite's [`import.meta.glob()`](https://vite.dev/guide/features.html#glob-import).
+
+:::note
+You can also use `import.meta.glob()` itself in your Astro project. You may want to do this when:
+- You need this feature in a file that isn't `.astro`, like an API route. `Astro.glob()` is only available in `.astro` files, while `import.meta.glob()` is available anywhere in the project.
+- You don't want to load each file immediately. `import.meta.glob()` can return functions that import the file content, rather than returning the content itself. Note that this import includes all styles and scripts for any imported files. These will be bundled and added to the page whether or not a file is actually used, as this is decided by static analysis, not at runtime.
+- You want access to each file's path. `import.meta.glob()` returns a map of a file's path to its content, while `Astro.glob()` returns a list of content.
+- You want to pass multiple patterns; for example, you want to add a "negative pattern" that filters out certain files. `import.meta.glob()` can optionally take an array of glob strings, rather than a single string.
+
+Read more in the [Vite documentation](https://vite.dev/guide/features.html#glob-import).
+:::
+#### Markdown Files
+
+Markdown files loaded with `Astro.glob()` return the following `MarkdownInstance` interface:
+
+```ts
+export interface MarkdownInstance<T extends Record<string, any>> {
+  /* Any data specified in this file's YAML frontmatter */
+	frontmatter: T;
+  /* The absolute file path of this file */
+	file: string;
+  /* The rendered path of this file */
+	url: string | undefined;
+  /* Astro Component that renders the contents of this file */
+	Content: AstroComponentFactory;
+  /** (Markdown only) Raw Markdown file content, excluding layout HTML and YAML frontmatter */
+	rawContent(): string;
+  /** (Markdown only) Markdown file compiled to HTML, excluding layout HTML */
+	compiledContent(): string;
+  /* Function that returns an array of the h1...h6 elements in this file */
+	getHeadings(): Promise<{ depth: number; slug: string; text: string }[]>;
+	default: AstroComponentFactory;
+}
+```
+
+You can optionally provide a type for the `frontmatter` variable using a TypeScript generic.
+
+```astro
+---
+interface Frontmatter {
+  title: string;
+  description?: string;
+}
+const posts = await Astro.glob<Frontmatter>('../pages/post/*.md');
+---
+
+<ul>
+  {posts.map(post => <li>{post.frontmatter.title}</li>)}
+</ul>
+```
+
+#### Astro Files
+
+Astro files have the following interface:
+
+```ts
+export interface AstroInstance {
+  /* The file path of this file */
+  file: string;
+  /* The URL for this file (if it is in the pages directory) */
+	url: string | undefined;
+	default: AstroComponentFactory;
+}
+```
+
+#### Other Files
+
+Other files may have various different interfaces, but `Astro.glob()` accepts a TypeScript generic if you know exactly what an unrecognized file type contains.
+
+```ts
+---
+interface CustomDataFile {
+  default: Record<string, any>;
+}
+const data = await Astro.glob<CustomDataFile>('../data/**/*.js');
+---
+```
+
+### `Astro.props`
+
+`Astro.props` is an object containing any values that have been passed as [component attributes](/en/basics/astro-components/#component-props). Layout components for `.md` and `.mdx` files receive frontmatter values as props.
+
+```astro {3}
+---
+// src/components/Heading.astro
+const { title, date } = Astro.props;
+---
+<div>
+  <h1>{title}</h1>
+  <p>{date}</p>
+</div>
+```
+
+```astro /title=".+"/ /date=".+"/
+---
+// src/pages/index.astro
+import Heading from '../components/Heading.astro';
+---
+<Heading title="My First Post" date="09 Aug 2022" />
+```
+
+<ReadMore>Learn more about how [Markdown and MDX Layouts](/en/guides/markdown-content/#frontmatter-layout-property) handle props.</ReadMore>
+
+<ReadMore>Learn how to add [TypeScript type definitions for your props](/en/guides/typescript/#component-props).</ReadMore>
+
+### `Astro.params`
+
+`Astro.params` is an object containing the values of dynamic route segments matched for this request.
+
+In static builds, this will be the `params` returned by `getStaticPaths()` used for prerendering [dynamic routes](/en/guides/routing/#dynamic-routes).
+
+In SSR builds, this can be any value matching the path segments in the dynamic route pattern.
+
+```astro title="src/pages/posts/[id].astro"
+---
+export function getStaticPaths() {
+  return [
+    { params: { id: '1' } },
+    { params: { id: '2' } },
+    { params: { id: '3' } }
+  ];
+}
+
+const { id } = Astro.params;
+---
+<h1>{id}</h1>
+```
+
+See also: [`params`](#params)
+
+### `Astro.request`
+
+<p>
+
+**Type:** `Request`
+</p>
+
+`Astro.request` is a standard [Request](https://developer.mozilla.org/en-US/docs/Web/API/Request) object. It can be used to get the `url`, `headers`, `method`, and even body of the request. 
+
+```astro
+<p>Received a {Astro.request.method} request to "{Astro.request.url}".</p>
+<p>Received request headers: <code>{JSON.stringify(Object.fromEntries(Astro.request.headers))}</code>
+```
+
+See also: [`Astro.url`](#astrourl)
+
+:::note
+With the default `output: 'static'` option, `Astro.request.url` does not contain search parameters, like `?foo=bar`, as it's not possible to determine them ahead of time during static builds. However in `output: 'server'` mode, `Astro.request.url` does contain search parameters as it can be determined from a server request.
+:::
+
+### `Astro.response`
+
+<p>
+
+**Type:** `ResponseInit & { readonly headers: Headers }`
+</p>
+
+`Astro.response` is a standard `ResponseInit` object. It has the following structure. 
+
+ - `status`: The numeric status code of the response, e.g., `200`.
+ - `statusText`: The status message associated with the status code, e.g., `'OK'`.
+ - `headers`: A [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) instance that you can use to set the HTTP headers of the response.
+
+`Astro.response` is used to set the `status`, `statusText`, and `headers` for a page's response.
+
+
+```astro
+---
+if(condition) {
+  Astro.response.status = 404;
+  Astro.response.statusText = 'Not found';
+}
+---
+```
+
+Or to set a header:
+
+```astro
+---
+Astro.response.headers.set('Set-Cookie', 'a=b; Path=/;');
+---
+```
+
+### `Astro.cookies`
+
+<p>
+
+**Type:** `AstroCookies`<br />
+<Since v="1.4.0" />
+</p>
+
+`Astro.cookies` contains utilities for reading and manipulating cookies in [server-side rendering](/en/guides/on-demand-rendering/) mode.
+
+##### `get`
+
+<p>
+
+**Type:** <code>(key: string, options?: <a href="#astrocookiegetoptions">AstroCookieGetOptions</a>) => <a href="#astrocookie">AstroCookie</a> | undefined</code>
+</p>
+
+Gets the cookie as an [`AstroCookie`](#astrocookie) object, which contains the `value` and utility functions for converting the cookie to non-string types.
+
+##### `has`
+
+<p>
+
+**Type:** <code>(key: string, options?: <a href="#astrocookiegetoptions">AstroCookieGetOptions</a>) => boolean</code>
+</p>
+
+Whether this cookie exists. If the cookie has been set via `Astro.cookies.set()` this will return true, otherwise it will check cookies in the `Astro.request`.
+
+##### `set`
+
+<p>
+
+**Type:** <code>(key: string, value: string | object, options?: <a href="#astrocookiesetoptions">AstroCookieSetOptions</a>) => void</code>
+</p>
+
+Sets the cookie `key` to the given value. This will attempt to convert the cookie value to a string. Options provide ways to set [cookie features](https://www.npmjs.com/package/cookie#options-1), such as the `maxAge` or `httpOnly`.
+
+##### `delete`
+
+<p>
+
+**Type:** `(key: string, options?: AstroCookieDeleteOptions) => void`
+</p>
+
+Invalidates a cookie by setting the expiration date in the past (0 in Unix time).
+
+Once a cookie is "deleted" (expired), `Astro.cookies.has()` will return `false` and `Astro.cookies.get()` will return an [`AstroCookie`](#astrocookie) with a `value` of `undefined`. Options available when deleting a cookie are: `domain`, `path`, `httpOnly`, `sameSite`, and `secure`.
+
+##### `merge`
+
+<p>
+
+**Type:** `(cookies: AstroCookies) => void`
+</p>
+
+Merges a new `AstroCookies` instance into the current instance. Any new cookies will be added to the current instance and any cookies with the same name will overwrite existing values.
+
+##### `headers`
+
+<p>
+
+**Type:** `() => Iterator<string>`
+</p>
+
+Gets the header values for `Set-Cookie` that will be sent out with the response.
+
+#### `AstroCookie`
+
+Getting a cookie via `Astro.cookies.get()` returns a `AstroCookie` type. It has the following structure.
+
+##### `value`
+
+<p>
+
+**Type:** `string`
+</p>
+
+The raw string value of the cookie.
+
+##### `json`
+
+<p>
+
+**Type:** `() => Record<string, any>`
+</p>
+
+Parses the cookie value via `JSON.parse()`, returning an object. Throws if the cookie value is not valid JSON.
+
+##### `number`
+
+<p>
+
+**Type:** `() => number`
+</p>
+
+Parses the cookie value as a Number. Returns NaN if not a valid number.
+
+##### `boolean`
+
+<p>
+
+**Type:** `() => boolean`
+</p>
+
+Converts the cookie value to a boolean.
+
+#### `AstroCookieGetOptions`
+
+<p><Since v="4.1.0"/></p>
+
+Getting a cookie also allows specifying options via the `AstroCookieGetOptions` interface:
+
+##### `decode`
+
+<p>
+**Type:** `(value: string) => string`
+</p>
+
+Allows customization of how a cookie is deserialized into a value.
+
+#### `AstroCookieSetOptions`
+
+<p><Since v="4.1.0"/></p>
+
+Setting a cookie via `Astro.cookies.set()` allows passing in a `AstroCookieSetOptions` to customize how the cookie is serialized.
+
+##### `domain`
+
+<p>
+
+**Type:** `string`
+</p>
+
+ Specifies the domain. If no domain is set, most clients will interpret to apply to the current domain.
+
+##### `expires`
+
+<p>
+
+**Type:** `Date`
+</p>
+
+Specifies the date on which the cookie will expire.
+
+##### `httpOnly`
+
+<p>
+
+**Type:** `boolean`
+</p>
+
+If true, the cookie will not be accessible client-side.
+
+##### `maxAge`
+
+<p>
+
+**Type:** `number`
+</p>
+
+Specifies a number, in seconds, for which the cookie is valid.
+
+##### `path`
+
+<p>
+
+**Type:** `string`
+</p>
+
+Specifies a subpath of the domain in which the cookie is applied.
+
+##### `sameSite`
+
+<p>
+
+**Type:** `boolean | 'lax' | 'none' | 'strict'`
+</p>
+
+Specifies the value of the [SameSite](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-09#section-5.4.7) cookie header.
+
+##### `secure`
+
+<p>
+
+**Type:** `boolean`
+</p>
+
+If true, the cookie is only set on https sites.
+
+##### `encode`
+
+<p>
+
+**Type:** `(value: string) => string`
+</p>
+
+Allows customizing how the cookie is serialized.
+
+### `Astro.redirect()`
+
+<p>
+
+**Type:** `(path: string, status?: number) => Response`
+</p>
+
+Allows you to redirect to another page, and optionally provide an [HTTP response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages) as a second parameter.
+
+A page (and not a child component) must `return` the result of `Astro.redirect()` for the redirect to occur.
+
+For statically-generated sites, this will produce a client redirect using a [`<meta http-equiv="refresh">` tag](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta#http-equiv) and does not support status codes.
+
+When using an on-demand rendering mode, status codes are supported. Astro will serve redirected requests with a default HTTP response status of `302` unless another code is specified.
+
+The following example redirects a user to a login page:
+
+```astro title="src/pages/account.astro" {8}
+---
+import { isLoggedIn } from '../utils';
+
+const cookie = Astro.request.headers.get('cookie');
+
+// If the user is not logged in, redirect them to the login page
+if (!isLoggedIn(cookie)) {
+  return Astro.redirect('/login');
+}
+---
+```
+
+### `Astro.rewrite()`
+
+<p>
+
+**Type:** `(rewritePayload: string | URL | Request) => Promise<Response>`<br />
+<Since v="4.13.0" />
+</p>
+
+Allows you to serve content from a different URL or path without redirecting the browser to a new page. 
+
+The method accepts either a string, a `URL`, or a `Request` for the location of the path.
+
+Use a string to provide an explicit path:
+
+```astro title="src/pages/index.astro"
+---
+return Astro.rewrite("/login")
+---
+```
+
+Use a `URL` type when you need to construct the URL path for the rewrite. The following example renders a page's parent path by creating a new URL from the relative  `"../"` path:
+
+```astro title="src/pages/blog/index.astro"
+---
+return Astro.rewrite(new URL("../", Astro.url))
+---
+```
+
+Use a `Request` type for complete control of the `Request` sent to the server for the new path. The following example sends a request to render the parent page while also providing headers:
+
+```astro title="src/pages/blog/index.astro"
+---
+return Astro.rewrite(new Request(new URL("../", Astro.url), {
+  headers: {
+    "x-custom-header": JSON.stringify(Astro.locals.someValue)
+  }
+}))
+---
+```
+
+### `Astro.url`
+
+<p>
+
+**Type:** `URL`<br />
+<Since v="1.0.0-rc" />
+</p>
+
+A [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object constructed from the current `Astro.request.url` URL string value. Useful for interacting with individual properties of the request URL, like pathname and origin. 
+
+Equivalent to doing `new URL(Astro.request.url)`.
+
+`Astro.url` will be `localhost` in dev mode if [site](/en/reference/configuration-reference/#site) is not configured for static sites, and for on-demand rendered routes.
+
+```astro
+<h1>The current URL is: {Astro.url}</h1>
+<h1>The current URL pathname is: {Astro.url.pathname}</h1>
+<h1>The current URL origin is: {Astro.url.origin}</h1>
+```
+
+You can also use `Astro.url` to create new URLs by passing it as an argument to [`new URL()`](https://developer.mozilla.org/en-US/docs/Web/API/URL/URL).
+
+```astro title="src/pages/index.astro"
+---
+// Example: Construct a canonical URL using your production domain
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+// Example: Construct a URL for SEO meta tags using your current domain
+const socialImageURL = new URL('/images/preview.png', Astro.url);
+---
+<link rel="canonical" href={canonicalURL} />
+<meta property="og:image" content={socialImageURL} />
+```
+
+### `Astro.clientAddress`
+
+<p>
+
+**Type:** `string`<br />
+<Since v="1.0.0-rc" />
+</p>
+
+Specifies the [IP address](https://en.wikipedia.org/wiki/IP_address) of the request. This property is only available when building for SSR (server-side rendering) and should not be used for static sites.
+
+```astro
+---
+const ip = Astro.clientAddress;
+---
+
+<div>Your IP address is: <span class="address">{ ip }</span></div>
+```
+
+### `Astro.site`
+
+<p>
+
+**Type:** `URL | undefined`
+</p>
+
+`Astro.site` returns a `URL` made from `site` in your Astro config. If `site` in your Astro config isn't defined, `Astro.site` won't be defined.
+
+### `Astro.generator`
+
+<p>
+
+**Type:** `string`<br />
+<Since v="1.0.0" />
+</p>
+
+`Astro.generator` is a convenient way to add a [`<meta name="generator">`](https://html.spec.whatwg.org/multipage/semantics.html#meta-generator) tag with your current version of Astro. It follows the format `"Astro v1.x.x"`.
+
+```astro mark="Astro.generator"
+<html>
+  <head>
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <footer>
+      <p>Built with <a href="https://astro.build">{Astro.generator}</a></p>
+    </footer>
+  </body>
+</html>
+```
+
+### `Astro.slots`
+
+`Astro.slots` contains utility functions for modifying an Astro component's slotted children.
+
+#### `Astro.slots.has()`
+
+<p>
+
+**Type:** `(slotName: string) => boolean`
+</p>
+
+You can check whether content for a specific slot name exists with `Astro.slots.has()`. This can be useful when you want to wrap slot contents, but only want to render the wrapper elements when the slot is being used.
+
+```astro  title="src/pages/index.astro"
+---
+---
+<slot />
+
+{Astro.slots.has('more') && (
+  <aside>
+    <h2>More</h2>
+    <slot name="more" />
+  </aside>
+)}
+```
+
+#### `Astro.slots.render()`
+
+<p>
+
+**Type:** `(slotName: string, args?: any[]) => Promise<string>`
+</p>
+
+You can asynchronously render the contents of a slot to a string of HTML using `Astro.slots.render()`.
+
+```astro
+---
+const html = await Astro.slots.render('default');
+---
+<Fragment set:html={html} />
+```
+
+:::note
+This is for advanced use cases! In most circumstances, it is simpler to render slot contents with [the `<slot />` element](/en/basics/astro-components/#slots).
+:::
+
+`Astro.slots.render()` optionally accepts a second argument: an array of parameters that will be forwarded to any function children. This can be useful for custom utility components.
+
+For example, this `<Shout />` component converts its `message` prop to uppercase and passes it to the default slot:
+
+```astro title="src/components/Shout.astro" "await Astro.slots.render('default', [message])"
+---
+const message = Astro.props.message.toUpperCase();
+let html = '';
+if (Astro.slots.has('default')) {
+  html = await Astro.slots.render('default', [message]);
+}
+---
+<Fragment set:html={html} />
+```
+
+A callback function passed as `<Shout />`’s child will receive the all-caps `message` parameter:
+
+```astro title="src/pages/index.astro"
+---
+import Shout from "../components/Shout.astro";
+---
+<Shout message="slots!">
+  {(message) => <div>{message}</div>}
+</Shout>
+
+<!-- renders as <div>SLOTS!</div> -->
+```
+
+Callback functions can be passed to named slots inside a wrapping HTML element tag with a `slot` attribute. This element is only used to transfer the callback to a named slot and will not be rendered onto the page.
+
+```astro
+<Shout message="slots!">
+  <fragment slot="message">
+    {(message) => <div>{message}</div>}
+  </fragment>
+</Shout>
+```
+
+Use a standard HTML element for the wrapping tag, or any lower case tag (e.g. `<fragment>` instead of `<Fragment />`) that will not be interpreted as a component.  Do not use the HTML `<slot>` element as this will be interpreted as an Astro slot.
+
+### `Astro.self`
+
+`Astro.self` allows Astro components to be recursively called. This behaviour lets you render an Astro component from within itself by using `<Astro.self>` in the component template. This can be helpful for iterating over large data stores and nested data-structures.
+
+```astro
+---
+// NestedList.astro
+const { items } = Astro.props;
+---
+<ul class="nested-list">
+  {items.map((item) => (
+    <li>
+      <!-- If there is a nested data-structure we render `<Astro.self>` -->
+      <!-- and can pass props through with the recursive call -->
+      {Array.isArray(item) ? (
+        <Astro.self items={item} />
+      ) : (
+        item
+      )}
+    </li>
+  ))}
+</ul>
+```
+
+This component could then be used like this:
+
+```astro
+---
+import NestedList from './NestedList.astro';
+---
+<NestedList items={['A', ['B', 'C'], 'D']} />
+```
+
+And would render HTML like this:
+
+```html
+<ul class="nested-list">
+  <li>A</li>
+  <li>
+    <ul class="nested-list">
+      <li>B</li>
+      <li>C</li>
+    </ul>
+  </li>
+  <li>D</li>
+</ul>
+```
+
+
+### `Astro.locals`
+
+<p>
+
+<Since v="2.4.0" />
+</p>
+
+`Astro.locals` is an object containing any values from the [`context.locals`](#contextlocals) object from a middleware. Use this to access data returned by middleware in your `.astro` files.
+
+```astro title="src/pages/Orders.astro"
+---
+const title = Astro.locals.welcomeTitle();
+const orders = Array.from(Astro.locals.orders.entries());
+---
+<h1>{title}</h1>
+<ul>
+    {orders.map(order => {
+        return <li>{/* do something with each order */}</li>
+    })}
+</ul>
+```
+
+### `Astro.preferredLocale`
+
+<p>
+
+**Type:** `string | undefined`<br />
+<Since v="3.5.0" />
+</p>
+
+`Astro.preferredLocale` is a computed value that represents the preferred locale of the user. 
+
+It is computed by checking the configured locales in your `i18n.locales` array and locales supported by the users's browser via the header `Accept-Language`. This value is `undefined` if no such match exists.
+
+This property is only available when building for SSR (server-side rendering) and should not be used for static sites.
+
+### `Astro.preferredLocaleList`
+
+<p>
+
+**Type:** `string[] | undefined`<br />
+<Since v="3.5.0" />
+</p>
+
+`Astro.preferredLocaleList` represents the array of all locales that are both requested by the browser and supported by your website. This produces a list of all compatible languages between your site and your visitor. 
+
+If none of the browser's requested languages are found in your locales array, then the value is `[]`: you do not support any of your visitor's preferred locales.
+
+If the browser does not specify any preferred languages, then this value will be [`i18n.locales`](/en/reference/configuration-reference/#i18nlocales): all of your supported locales will be considered equally preferred by a visitor with no preferences. 
+
+This property is only available when building for SSR (server-side rendering) and should not be used for static sites.
+
+### `Astro.currentLocale`
+
+<p>
+
+**Type:** `string | undefined`<br />
+<Since v="3.5.6" />
+</p>
+
+The locale computed from the current URL, using the syntax specified in your `locales` configuration. If the URL does not contain a `/[locale]/` prefix, then the value will default to `i18n.defaultLocale`.
+
+### `Astro.getActionResult()`
+
+<p>
+**Type:** `(action: TAction) => ActionReturnType<TAction> | undefined`<br />
+<Since v="4.15.0" />
+</p>
+
+`Astro.getActionResult()` is a function that returns the result of an [Action](/en/guides/actions/) submission. This accepts an action function as an argument (e.g. `actions.logout`) and returns a `data` or `error` object when a submission is received. Otherwise, it will return `undefined`.
+
+```astro title="src/pages/index.astro"
+---
+import { actions } from 'astro:actions';
+
+const result = Astro.getActionResult(actions.logout);
+---
+
+<form action={actions.logout}>
+  <button type="submit">Log out</button>
+</form>
+{result?.error && <p>Failed to log out. Please try again.</p>}
+```
+
+### `Astro.callAction()`
+
+<p>
+<Since v="4.15.0" />
+</p>
+
+`Astro.callAction()` is a function used to call an Action handler directly from your Astro component. This function accepts an Action function as the first argument (e.g. `actions.logout`) and any input that action receives as the second argument. It returns the result of the action as a promise.
+
+```astro title="src/pages/index.astro"
+---
+import { actions } from 'astro:actions';
+
+const { data, error } = await Astro.callAction(actions.logout, { userId: '123' });
+---
+```
+
+### `Astro.routePattern`
+
+<p>
+
+**Type**: `string`<br />
+<Since v="5.0.0" />
+</p>
+
+The route pattern responsible for generating the current page or route. In file-based routing, this resembles the file path in your project used to create the route. When integrations create routes for your project, `context.routePattern` is identical to the value for `injectRoute.pattern`.
+	
+The value will start with a leading slash and look similar to the path of a page component relative to your `srcDir/pages/` folder without a file extension.
+	
+For example, the file `src/pages/en/blog/[slug].astro` will return `/en/blog/[slug]` for `context.routePattern`. Every page on your site generated by that file (e.g. `/en/blog/post-1/`, `/en/blog/post-2/`, etc.) shares the same value for `context.routePattern`. In the case of `index.*` routes, the route pattern will not include the word "index." For example, `src/pages/index.astro` will return `/`.
+	
+You can use this property to understand which route is rendering your component. This allows you to target or analyze similarly-generated page URLs together. For example, you can use it to conditionally render certain information, or collect metrics about which routes are slower.
+
+See also: [`context.routePattern`](#contextroutepattern)
+
+### `Astro.isPrerendered`
+
+<p>
+
+**Type**: `boolean`<br />
+<Since v="5.0.0" />
+</p>
+
+A boolean representing whether or not the current page is prerendered.
+
+You can use this property to run conditional logic in middleware, for example, to avoid accessing headers in prerendered pages.
+
+See also: [`context.isPrerendered`](#contextisprerendered)
+
+## Endpoint Context
+
+[Endpoint functions](/en/guides/endpoints/) receive a context object as the first parameter. It mirrors many of the `Astro` global properties.
+
+```ts title="endpoint.json.ts"
+import type { APIContext } from 'astro';
+
+export function GET(context: APIContext) {
+  // ...
+}
+```
+
+### `context.params`
+
+`context.params` is an object containing the values of dynamic route segments matched for this request.
+
+In static builds, this will be the `params` returned by `getStaticPaths()` used for prerendering [dynamic routes](/en/guides/routing/#dynamic-routes).
+
+In SSR builds, this can be any value matching the path segments in the dynamic route pattern.
+
+```ts title="src/pages/posts/[id].json.ts"
+import type { APIContext } from 'astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { id: '1' } },
+    { params: { id: '2' } },
+    { params: { id: '3' } }
+  ];
+}
+
+export function GET({ params }: APIContext) {
+	return new Response(
+    JSON.stringify({ id: params.id }),
+  );
+}
+```
+
+See also: [`params`](#params)
+
+### `context.props`
+
+<p>
+
+<Since v="1.5.0" />
+</p>
+
+`context.props` is an object containing any `props` passed from `getStaticPaths()`. Because `getStaticPaths()` is not used when building for SSR (server-side rendering), `context.props` is only available in static builds.
+
+```ts title="src/pages/posts/[id].json.ts"
+import type { APIContext } from 'astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { id: '1' }, props: { author: 'Blu' } },
+    { params: { id: '2' }, props: { author: 'Erika' } },
+    { params: { id: '3' }, props: { author: 'Matthew' } }
+  ];
+}
+
+export function GET({ props }: APIContext) {
+	return new Response(
+    JSON.stringify({ author: props.author }),
+  );
+}
+```
+
+See also: [Data Passing with `props`](#data-passing-with-props)
+
+### `context.request`
+
+<p>
+
+**Type:** `Request`
+</p>
+
+A standard [Request](https://developer.mozilla.org/en-US/docs/Web/API/Request) object. It can be used to get the `url`, `headers`, `method`, and even body of the request.
+
+```ts
+import type { APIContext } from 'astro';
+
+export function GET({ request }: APIContext) {
+  return new Response(`Hello ${request.url}`);
+}
+```
+
+See also: [Astro.request](#astrorequest)
+
+### `context.cookies`
+
+<p>
+
+**Type:** `AstroCookies`
+</p>
+
+`context.cookies` contains utilities for reading and manipulating cookies.
+
+See also: [Astro.cookies](#astrocookies)
+
+### `context.url`
+
+<p>
+
+**Type:** `URL`<br />
+<Since v="1.5.0" />
+</p>
+
+A [URL](https://developer.mozilla.org/en-US/docs/Web/API/URL) object constructed from the current `context.request.url` URL string value.
+
+See also: [Astro.url](#astrourl)
+
+### `context.clientAddress`
+
+<p>
+
+**Type:** `string`<br />
+<Since v="1.5.0" />
+</p>
+
+Specifies the [IP address](https://en.wikipedia.org/wiki/IP_address) of the request. This property is only available when building for SSR (server-side rendering) and should not be used for static sites.
+
+```ts
+import type { APIContext } from 'astro';
+
+export function GET({ clientAddress }: APIContext) {
+  return new Response(`Your IP address is: ${clientAddress}`);
+}
+```
+
+See also: [Astro.clientAddress](#astroclientaddress)
+
+
+### `context.site`
+
+<p>
+
+**Type:** `URL | undefined`<br />
+<Since v="1.5.0" />
+</p>
+
+`context.site` returns a `URL` made from `site` in your Astro config. If undefined, this will return a URL generated from `localhost`.
+
+See also: [Astro.site](#astrosite)
+
+### `context.generator`
+
+<p>
+
+**Type:** `string`<br />
+<Since v="1.5.0" />
+</p>
+
+`context.generator` is a convenient way to indicate the version of Astro your project is running. It follows the format `"Astro v1.x.x"`.
+
+```ts title="src/pages/site-info.json.ts"
+import type { APIContext } from 'astro';
+
+export function GET({ generator, site }: APIContext) {
+  const body = JSON.stringify({ generator, site });
+  return new Response(body);
+}
+```
+
+See also: [Astro.generator](#astrogenerator)
+
+### `context.redirect()`
+
+<p>
+
+**Type:** `(path: string, status?: number) => Response`<br />
+<Since v="1.5.0" />
+</p>
+
+`context.redirect()` returns a [Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) object that allows you to redirect to another page. This function is only available when building for SSR (server-side rendering) and should not be used for static sites.
+
+```ts
+import type { APIContext } from 'astro';
+
+export function GET({ redirect }: APIContext) {
+  return redirect('/login', 302);
+}
+```
+
+See also: [`Astro.redirect()`](#astroredirect)
+
+### `context.rewrite()`
+
+<p>
+
+**Type:** `(rewritePayload: string | URL | Request) => Promise<Response>`<br />
+<Since v="4.13.0" />
+</p>
+
+Allows you to serve content from a different URL or path without redirecting the browser to a new page. 
+
+The method accepts either a string, a `URL`, or a `Request` for the location of the path.
+
+Use a string to provide an explicit path:
+
+```ts
+import type { APIContext } from 'astro';
+
+export function GET({ rewrite }: APIContext) {
+  return rewrite('/login');
+}
+```
+
+Use a `URL` type when you need to construct the URL path for the rewrite. The following example renders a page's parent path by creating a new URL from the relative  `"../"` path:
+
+```ts
+import type { APIContext } from 'astro';
+
+export function GET({ rewrite }: APIContext) {
+  return rewrite(new URL("../", Astro.url));
+}
+```
+
+Use a `Request` type for complete control of the `Request` sent to the server for the new path. The following example sends a request to render the parent page while also providing headers:
+
+```ts
+import type { APIContext } from 'astro';
+
+export function GET({ rewrite }: APIContext) {
+  return rewrite(new Request(new URL("../", Astro.url), {
+   headers: {
+     "x-custom-header": JSON.stringify(Astro.locals.someValue)
+   }
+ }));
+}
+```
+
+See also: [`Astro.rewrite()`](#astrorewrite)
+
+### `context.locals`
+
+<p><Since v="2.4.0" /></p>
+
+`context.locals` is an object used to store and access arbitrary information during the lifecycle of a request.
+
+Middleware functions can read and write the values of `context.locals`:
+
+```ts title="src/middleware.ts"
+import type { MiddlewareHandler } from 'astro';
+
+export const onRequest: MiddlewareHandler = ({ locals }, next) => {
+  if (!locals.title) {
+    locals.title = "Default Title";
+  }
+  return next();
+}
+```
+
+API endpoints can only read information from `context.locals`:
+
+```ts title="src/pages/hello.ts"
+import type { APIContext } from 'astro';
+
+export function GET({ locals }: APIContext) {
+  return new Response(locals.title); // "Default Title"
+}
+```
+
+:::note
+The value of `locals` cannot be overridden at run time. Doing so would risk wiping out all the information stored by the user.  Astro performs checks and will throw an error if `locals` are overridden.
+:::
+
+See also: [`Astro.locals`](#astrolocals)
+
+### `context.getActionResult()`
+
+<p>
+
+**Type:** `(action: TAction) => ActionReturnType<TAction> | undefined`<br />
+<Since v="4.15.0" />
+</p>
+
+`context.getActionResult()` is a function that returns the result of an [Action](/en/guides/actions/) submission. This accepts an action function as an argument (e.g. `actions.logout`), and returns a `data` or `error` object when a submission is received. Otherwise, it will return `undefined`.
+
+
+See also [`Astro.getActionResult()`](#astrogetactionresult)
+
+### `context.callAction()`
+
+<p>
+<Since v="4.15.0" />
+</p>
+
+`context.callAction()` is a function used to call an Action handler directly from your Astro component. This function accepts an Action function as the first argument (e.g. `actions.logout`) and any input that action receives as the second argument. It returns the result of the action as a promise.
+
+
+See also [`Astro.callAction()`](#astrocallaction)
+
+### `context.routePattern`
+
+<p>
+
+**Type**: `string`<br />
+<Since v="5.0.0" />
+</p>
+
+The route pattern responsible for generating the current page or route. In file-based routing, this resembles the file path in your project used to create the route. When integrations create routes for your project, `context.routePattern` is identical to the value for `injectRoute.pattern`.
+
+The value will start with a leading slash and look similar to the path of a page component relative to your `srcDir/pages/` folder without a file extension.
+
+For example, the file `src/pages/en/blog/[slug].astro` will return `/en/blog/[slug]` for `context.routePattern`. Every page on your site generated by that file (e.g. `/en/blog/post-1/`, `/en/blog/post-2/`, etc.) shares the same value for `context.routePattern`. In the case of `index.*` routes, the route pattern will not include the word "index." For example, `src/pages/index.astro` will return `/`.
+
+You can use this property to understand which route is rendering your component. This allows you to target or analyze similarly-generated page URLs together. For example, you can use it to conditionally render certain information, or collect metrics about which routes are slower.
+
+See also: [`Astro.routePattern`](#astroroutepattern)
+
+### `context.isPrerendered`
+
+<p>
+
+**Type**: `boolean`<br />
+<Since v="5.0.0" />
+</p>
+
+A boolean representing whether or not the current page is prerendered.
+
+You can use this property to run conditional logic in middleware, for example, to avoid accessing headers in prerendered pages.
+
+See also: [`Astro.isPrerendered`](#astroisprerendered)
+
+## `getStaticPaths()`
+
+**Type:** `(options: GetStaticPathsOptions) => Promise<GetStaticPathsResult> | GetStaticPathsResult`
+
+If a page uses dynamic params in the filename, that component will need to export a `getStaticPaths()` function.
+
+This function is required because Astro is a static site builder. That means that your entire site is built ahead of time. If Astro doesn't know to generate a page at build time, your users won't see it when they visit your site.
+
+```astro
+---
+export async function getStaticPaths() {
+  return [
+    { params: { /* required */ }, props: { /* optional */ } },
+    { params: { ... } },
+    { params: { ... } },
+    // ...
+  ];
+}
+---
+<!-- Your HTML template here. -->
+```
+
+The `getStaticPaths()` function should return an array of objects to determine which paths will be pre-rendered by Astro.
+
+It can also be used in static file endpoints for [dynamic routing](/en/guides/endpoints/#params-and-dynamic-routing).
+
+:::caution
+The `getStaticPaths()` function executes in its own isolated scope once, before any page loads. Therefore you can't reference anything from its parent scope, other than file imports. The compiler will warn if you break this requirement.
+:::
+
+### `params`
+
+The `params` key of every returned object tells Astro what routes to build. The returned params must map back to the dynamic parameters and rest parameters defined in your component filepath.
+
+`params` are encoded into the URL, so only strings are supported as values. The value for each `params` object must match the parameters used in the page name.
+
+For example, suppose that you have a page at `src/pages/posts/[id].astro`. If you export `getStaticPaths` from this page and return the following for paths:
+
+```astro
+---
+export async function getStaticPaths() {
+  return [
+    { params: { id: '1' } },
+    { params: { id: '2' } },
+    { params: { id: '3' } }
+  ];
+}
+
+const { id } = Astro.params;
+---
+<h1>{id}</h1>
+```
+
+Then Astro will statically generate `posts/1`, `posts/2`, and `posts/3` at build time.
+
+### Data Passing with `props`
+
+To pass additional data to each generated page, you can also set a `props` value on every returned path object. Unlike `params`, `props` are not encoded into the URL and so aren't limited to only strings.
+
+For example, suppose that you generate pages based off of data fetched from a remote API. You can pass the full data object to the page component inside of `getStaticPaths`:
+
+```astro
+---
+export async function getStaticPaths() {
+  const data = await fetch('...').then(response => response.json());
+
+  return data.map((post) => {
+    return {
+      params: { id: post.id },
+      props: { post },
+    };
+  });
+}
+
+const { id } = Astro.params;
+const { post } = Astro.props;
+---
+<h1>{id}: {post.name}</h1>
+```
+
+You can also pass a regular array, which may be helpful when generating or stubbing a known list of routes.
+
+```astro
+---
+export async function getStaticPaths() {
+  const posts = [
+    {id: '1', category: "astro", title: "API Reference"},
+    {id: '2', category: "react", title: "Creating a React Counter!"}
+  ];
+  return posts.map((post) => {
+    return {
+      params: { id: post.id },
+      props: { post }
+    };
+  });
+}
+const {id} = Astro.params;
+const {post} = Astro.props;
+---
+<body>
+  <h1>{id}: {post.title}</h1>
+  <h2>Category: {post.category}</h2>
+</body>
+```
+
+Then Astro will statically generate `posts/1` and `posts/2` at build time using the page component in `pages/posts/[id].astro`. The page can reference this data using `Astro.props`:
+
+### `paginate()`
+
+Pagination is a common use-case for websites that Astro natively supports via the `paginate()` function. `paginate()` will automatically generate the array to return from `getStaticPaths()` that creates one URL for every page of the paginated collection. The page number will be passed as a param, and the page data will be passed as a `page` prop.
+
+```js
+export async function getStaticPaths({ paginate }) {
+  // Load your data with fetch(), Astro.glob(), etc.
+  const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=150`);
+  const result = await response.json();
+  const allPokemon = result.results;
+
+  // Return a paginated collection of paths for all posts
+  return paginate(allPokemon, { pageSize: 10 });
+}
+
+// If set up correctly, The page prop now has everything that
+// you need to render a single page (see next section).
+const { page } = Astro.props;
+```
+
+`paginate()` assumes a file name of `[page].astro` or `[...page].astro`. The `page` param becomes the page number in your URL:
+
+- `/posts/[page].astro` would generate the URLs `/posts/1`, `/posts/2`, `/posts/3`, etc.
+- `/posts/[...page].astro` would generate the URLs `/posts`, `/posts/2`, `/posts/3`, etc.
+
+`paginate()` has the following arguments:
+- `pageSize` - The number of items shown per page (`10` by default)
+- `params` - Send additional parameters for creating dynamic routes
+- `props` - Send additional props to be available on each page
+
+#### The pagination `page` prop
+
+Pagination will pass a `page` prop to every rendered page that represents a single page of data in the paginated collection. This includes the data that you've paginated (`page.data`) as well as metadata for the page (`page.url`, `page.start`, `page.end`, `page.total`, etc). This metadata is useful for things like a "Next Page" button or a "Showing 1-10 of 100" message.
+
+##### `page.data`
+
+<p>
+
+**Type:** `Array`
+</p>
+
+Array of data returned from `data()` for the current page.
+
+##### `page.start`
+
+<p>
+
+**Type:** `number`
+</p>
+
+Index of first item on current page, starting at `0`. (e.g. if `pageSize: 25`, this would be `0` on page 1, `25` on page 2, etc.)
+
+##### `page.end`
+
+<p>
+
+**Type:** `number`
+</p>
+
+Index of last item on current page.
+
+##### `page.size`
+
+<p>
+
+**Type:** `number`<br />
+**Default:** `10`
+</p>
+
+How many items per-page.
+
+##### `page.total`
+
+<p>
+
+**Type:** `number`
+</p>
+
+The total number of items across all pages.
+
+##### `page.currentPage`
+
+<p>
+
+**Type:** `number`
+</p>
+
+The current page number, starting with `1`.
+
+##### `page.lastPage`
+
+<p>
+
+**Type:** `number`
+</p>
+
+The total number of pages.
+
+##### `page.url.current`
+
+<p>
+
+**Type:** `string`
+</p>
+
+Get the URL of the current page (useful for canonical URLs). If a value is set for [`base`](/en/reference/configuration-reference/#base), the URL starts with that value.
+
+##### `page.url.prev`
+
+<p>
+
+**Type:** `string | undefined`
+</p>
+
+Get the URL of the previous page (will be `undefined` if on the first page). If a value is set for [`base`](/en/reference/configuration-reference/#base), the URL starts with that value.
+
+##### `page.url.next`
+
+<p>
+
+**Type:** `string | undefined`
+</p>
+
+Get the URL of the next page (will be `undefined` if on the last page). If a value is set for [`base`](/en/reference/configuration-reference/#base), the URL starts with that value.
+
+##### `page.url.first`
+
+<p>
+  **Type:** `string`
+</p>
+
+Get the URL of the first page (will be `undefined` if on the first page). If a value is set for [`base`](/en/reference/configuration-reference/#base), the URL starts with that value.
+
+##### `page.url.last`
+
+<p>
+  **Type:** `string`
+</p>
+
+Get the URL of the last page  (will be `undefined` if on the last page). If a value is set for [`base`](/en/reference/configuration-reference/#base), the URL starts with that value.
+
+
+##### `page.url.first`
+
+<p>
+
+**Type:** `string | undefined`<br />
+<Since v="4.12.0" />
+</p>
+
+Get the URL of the first page (will be `undefined` if on page 1). If a value is set for [`base`](/en/reference/configuration-reference/#base), prepend the base path to the URL.
+
+##### `page.url.last`
+
+<p>
+
+**Type:** `string | undefined`<br />
+<Since v="4.12.0" />
+</p>
+
+Get the URL of the last page (will be `undefined` if no more pages). If a value is set for [`base`](/en/reference/configuration-reference/#base), prepend the base path to the URL.
+
+## `import.meta`
+
+All ESM modules include a `import.meta` property. Astro adds `import.meta.env` through [Vite](https://vite.dev/guide/env-and-mode.html).
+
+**`import.meta.env.SSR`** can be used to know when rendering on the server. Sometimes you might want different logic, like a component that should only be rendered in the client:
+
+```jsx
+export default function () {
+  return import.meta.env.SSR ? <div class="spinner"></div> : <FancyComponent />;
+}
+```
+
+## Images (`astro:assets`)
+
+### `getImage()`
+
+<p>
+
+**Type:** `(options: UnresolvedImageTransform) => Promise<GetImageResult>`
+</p>
+
+:::caution
+`getImage()` relies on server-only APIs and breaks the build when used on the client.
+:::
+
+The `getImage()` function is intended for generating images destined to be used somewhere else than directly in HTML, for example in an [API Route](/en/guides/endpoints/#server-endpoints-api-routes). It also allows you to create your own custom `<Image />` component.
+
+`getImage()` takes an options object with the [same properties as the Image component](/en/reference/components-reference/#properties) (except `alt`).
+
+```astro
+---
+import { getImage } from "astro:assets";
+import myBackground from "../background.png"
+
+const optimizedBackground = await getImage({src: myBackground, format: 'avif'})
+---
+
+<div style={`background-image: url(${optimizedBackground.src});`}></div>
+```
+
+It returns an object with the following type:
+
+```ts
+type GetImageResult = {
+  /* Additional HTML attributes needed to render the image (width, height, style, etc..) */
+  attributes: Record<string, any>;
+  /* Validated parameters passed */
+  options: ImageTransform;
+  /* Original parameters passed */
+  rawOptions: ImageTransform;
+  /* Path to the generated image */
+  src: string;
+  srcSet: {
+    /* Generated values for srcset, every entry has a url and a size descriptor */
+    values: SrcSetValue[];
+    /* A value ready to use in`srcset` attribute */
+    attribute: string;
+  };
+}
+```
+
+## Content Collections (`astro:content`)
+
+<p><Since v="2.0.0" /></p>
+
+Content collections offer APIs to configure and query your content. For features and usage examples, [see our content collections guide](/en/guides/content-collections/).
+
+### `defineCollection()`
+
+<p>
+
+**Type:** `(input: CollectionConfig) => CollectionConfig`
+<Since v="2.0.0" />
+</p>
+
+`defineCollection()` is a utility to configure a collection in a `src/content/config.*` file.
+
+```ts title="src/content/config.ts"
+import { z, defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+
+const blog = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/data/blog' }),
+  schema: z.object({
+    title: z.string(),
+    permalink: z.string().optional(),
+  }),
+});
+
+// Expose your defined collection to Astro
+// with the `collections` export
+export const collections = { blog };
+```
+
+This function accepts the following properties:
+
+#### `loader`
+
+<p>
+
+**Type:** <code>() => Promise&lt;Array&lt;\{ id: string, [key: string]: any }&gt; | Record&lt;string, Record&lt;string, any&gt;&gt;&gt; | <a href="/en/reference/content-loader-reference/#loader-api">Loader</a></code>
+<Since v="5.0.0" />
+</p>
+
+A `loader` is either an object or a function that allows you to load data from any source, local or remote, into content collections.
+
+[See the `Content Collection` guide](/en/guides/content-collections/#defining-the-collection-loader) for example usage.
+
+#### `schema`
+
+<p>
+
+**Type:** <code>ZodType | (context: <a href="#schemacontext">SchemaContext</a>) => ZodType</code>
+<Since v="2.0.0" />
+</p>
+
+`schema` is an optional Zod object to configure the shape of document frontmatter for a collection. Each value must use [a Zod validator](https://github.com/colinhacks/zod).
+
+[See the `Content Collection` guide](/en/guides/content-collections/#defining-the-collection-schema) for example usage.
+
+### `reference()`
+
+<p>
+
+**Type:** `(collection: string) => ZodEffects<ZodString, { collection, id: string }>`<br />
+<Since v="2.5.0" />
+</p>
+
+The `reference()` function is used in the content config to define a relationship, or "reference," from one collection to another. This accepts a collection name and validates the entry identifier(s) specified in your content frontmatter or data file.
+
+This example defines references from a blog author to the `authors` collection and an array of related posts to the same `blog` collection:
+
+```ts
+import { defineCollection, reference, z } from 'astro:content';
+import { glob, file } from 'astro/loaders';
+
+const blog = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/data/blog' }),
+  schema: z.object({
+    // Reference a single author from the `authors` collection by `id`
+    author: reference('authors'),
+    // Reference an array of related posts from the `blog` collection by `slug`
+    relatedPosts: z.array(reference('blog')),
+  })
+});
+
+const authors = defineCollection({
+  loader: file("src/data/authors.json"),
+  schema: z.object({ /* ... */ })
+});
+
+export const collections = { blog, authors };
+```
+
+[See the `Content Collection` guide](/en/guides/content-collections/#defining-collection-references) for example usage.
+
+### `getCollection()`
+
+<p>
+
+**Type:** `(collection: string, filter?: (entry: CollectionEntry<collection>) => boolean) => CollectionEntry<collection>[]`
+<Since v="2.0.0" />
+</p>
+
+`getCollection()` is a function that retrieves a list of content collection entries by collection name.
+
+It returns all items in the collection by default, and accepts an optional `filter` function to narrow by entry properties. This allows you to query for only some items in a collection based on `id` or frontmatter values via the `data` object.
+
+```astro
+---
+import { getCollection } from 'astro:content';
+
+// Get all `src/content/blog/` entries
+const allBlogPosts = await getCollection('blog');
+
+// Only return posts with `draft: true` in the frontmatter
+const draftBlogPosts = await getCollection('blog', ({ data }) => {
+  return data.draft === true;
+});
+---
+```
+
+[See the `Content Collection` guide](/en/guides/content-collections/#querying-collections) for example usage.
+
+### `getEntry()`
+
+<p>
+
+**Type:** `( collection: string, id: string ) => CollectionEntry<collection> | ({ collection: string, id: string }) => CollectionEntry<collection>`
+<Since v="2.5.0" />
+</p>
+
+`getEntry()` is a function that retrieves a single collection entry by collection name and the entry `id`. `getEntry()` can also be used to get referenced entries to access the `data` or `body` properties:
+
+```astro
+---
+import { getEntry } from 'astro:content';
+
+// Get `src/content/blog/enterprise.md`
+const enterprisePost = await getEntry('blog', 'enterprise');
+
+// Get `src/content/captains/picard.json`
+const picardProfile = await getEntry('captains', 'picard');
+
+// Get the profile referenced by `data.captain`
+const enterpriseCaptainProfile = await getEntry(enterprisePost.data.captain);
+---
+```
+
+See the `Content Collections` guide for examples of [querying collection entries](/en/guides/content-collections/#querying-collections).
+
+### `getEntries()`
+
+<p>
+
+**Type:** `(Array<{ collection: string, id: string }>) => Array<CollectionEntry<collection>>`
+<Since v="2.5.0" />
+</p>
+
+`getEntries()` is a function that retrieves multiple collection entries from the same collection. This is useful for [returning an array of referenced entries](/en/guides/content-collections/#defining-collection-references) to access their associated `data` and `body` properties.
+
+```astro
+---
+import { getEntries } from 'astro:content';
+
+const enterprisePost = await getEntry('blog', 'enterprise');
+
+// Get related posts referenced by `data.relatedPosts`
+const enterpriseRelatedPosts = await getEntries(enterprisePost.data.relatedPosts);
+---
+```
+
+### `render()`
+
+<p>
+ 
+**Type:** `() => Promise<RenderedEntry>`
+<Since v="5.0.0" />
+</p>
+
+A function to compile a given entry for rendering. This returns the following properties:
+
+- `<Content />` - A component used to render the document's contents in an Astro file.
+- `headings` - A generated list of headings, [mirroring Astro's `getHeadings()` utility](/en/guides/markdown-content/#available-properties) on Markdown and MDX imports.
+- `remarkPluginFrontmatter ` - The modified frontmatter object after any [remark or rehype plugins have been applied](/en/guides/markdown-content/#modifying-frontmatter-programmatically). Set to type `any`.
+
+```astro
+---
+import { getEntry, render } from 'astro:content';
+const entry = await getEntry('blog', 'entry-1');
+
+const { Content, headings, remarkPluginFrontmatter } = await render(entry);
+---
+```
+
+[See the `Content Collection` guide](/en/guides/content-collections/#rendering-body-content) for example usage.
+
+### Collection Entry Type
+
+Query functions including [`getCollection()`](#getcollection), [`getEntry()`](#getentry), and [`getEntries()`](#getentries) each return entries with the `CollectionEntry` type. This type is available as a utility from `astro:content`:
+
+```ts
+import type { CollectionEntry } from 'astro:content';
+```
+
+The `CollectionEntry<TCollectionName>` type is an object with the following values. `TCollectionName` is the name of the collection you're querying (e.g. `CollectionEntry<'blog'>`).
+
+#### `id`
+
+**Example Type:** `'author-1' | 'author-2' | ...`
+
+A unique ID. Note that all IDs from Astro's built-in `glob()` loader are slugified.
+
+#### `collection`
+
+**Example Type:** `'blog' | 'authors' | ...`
+
+The name of a collection in which entries are located. This is the name used to reference the collection in your schema, and in querying functions.
+
+#### `data`
+
+**Type:** `CollectionSchema<TCollectionName>`
+
+An object of frontmatter properties inferred from your collection schema ([see `defineCollection()` reference](#definecollection)). Defaults to `any` if no schema is configured.
+
+#### `body`
+
+**Type:** `string`
+
+A string containing the raw, uncompiled body of a Markdown, MDX, or Markdoc document.
+
+### Other Content Collection Types
+
+The `astro:content` module also exports the following types for use in your Astro project:
+
+#### `CollectionKey`
+
+<p><Since v="3.1.0" /></p>
+
+A string union of all collection names defined in your `src/content/config.*` file. This type can be useful when defining a generic function that accepts any collection name.
+
+```ts
+import type { CollectionKey, getCollection } from 'astro:content';
+
+async function getCollection(collection: CollectionKey) {
+  return getCollection(collection);
+}
+```
+
+#### `SchemaContext`
+
+The `context` object that `defineCollection` uses for the function shape of `schema`. This type can be useful when building reusable schemas for multiple collections.
+
+This includes the following property:
+
+- `image` - The `image()` schema helper that allows you [to use local images in Content Collections](/en/guides/images/#images-in-content-collections)
+
+```ts
+import type { SchemaContext } from 'astro:content';
+
+export const imageSchema = ({ image }: SchemaContext) =>
+    z.object({
+        image: image(),
+        description: z.string().optional(),
+    });
+
+const blog = defineCollection({
+  loader:  /* ... */,
+  schema: ({ image }) => z.object({
+    title: z.string(),
+    permalink: z.string().optional(),
+    image: imageSchema({ image })
+  }),
+});
+```
+
+## Middleware (`astro:middleware`)
+
+<p><Since v="2.6.0" /></p>
+
+Middleware allows you to intercept requests and responses and inject behaviors dynamically every time a page or endpoint is about to be rendered. For features and usage examples, [see our middleware guide](/en/guides/middleware/).
+
+### `onRequest()`
+
+**Type:** `(context: APIContext, next: MiddlewareNext) => Promise<Response> | Response | Promise<void> | void`
+
+A required exported function from `src/middleware.js` that will be called before rendering every page or API route. It receives two arguments: [context](#context) and [next()](#next). `onRequest()` must return a `Response`: either directly, or by calling `next()`.
+
+```js title="src/middleware.js"
+export function onRequest (context, next) {
+    // intercept response data from a request
+    // optionally, transform the response
+    // return a Response directly, or the result of calling `next()`
+    return next();
+};
+```
+
+#### `context`
+
+<p>
+
+**Type:** `APIContext`
+</p>
+
+The first argument of `onRequest()` is a context object. It mirrors many of the `Astro` global properties.
+
+<ReadMore>See [Endpoint contexts](#endpoint-context) for more information about the context object.</ReadMore>
+
+#### `next()`
+
+<p>
+
+**Type:** `(rewritePayload?: string | URL | Request) => Promise<Response>`<br />
+</p>
+
+The second argument of `onRequest()` is a function that calls all the subsequent middleware in the chain and returns a `Response`. For example, other middleware could modify the HTML body of a response and awaiting the result of `next()` would allow your middleware to respond to those changes.
+
+Since Astro v4.13.0, `next()` accepts an optional URL path parameter in the form of a string, `URL`, or `Request` to [rewrite](/en/guides/routing/#rewrites) the current request without retriggering a new rendering phase.
+
+### `sequence()`
+
+<p>
+
+**Type:** `(...handlers: MiddlewareHandler[]) => MiddlewareHandler`
+</p>
+
+A function that accepts middleware functions as arguments, and will execute them in the order in which they are passed. 
+
+```js title="src/middleware.js"
+import { sequence } from "astro:middleware";
+
+async function validation(_, next) {...}
+async function auth(_, next) {...}
+async function greeting(_, next) {...}
+
+export const onRequest = sequence(validation, auth, greeting);
+```
+
+### `createContext()`
+
+<p>
+
+**Type:** `(context: CreateContext) => APIContext`<br />
+<Since v="2.8.0" />
+</p>
+
+A low-level API to create an [`APIContext`](#endpoint-context)to be passed to an Astro middleware `onRequest()` function.
+
+This function can be used by integrations/adapters to programmatically execute the Astro middleware.
+
+### `trySerializeLocals()`
+
+<p>
+
+**Type:** `(value: unknown) => string`<br />
+<Since v="2.8.0" />
+</p>
+
+A low-level API that takes in any value and tries to return a serialized version (a string) of it. If the value cannot be serialized, the function will throw a runtime error.
+
+## Internationalization (`astro:i18n`)
+
+<p><Since v="3.5.0" /></p>
+
+This module provides functions to help you create URLs using your project's configured locales.
+
+Creating routes for your project with the i18n router will depend on certain configuration values you have set that affect your page routes. When creating routes with these functions, be sure to take into account your individual settings for:
+
+- [`base`](/en/reference/configuration-reference/#base)
+- [`trailingSlash`](/en/reference/configuration-reference/#trailingslash)
+- [`build.format`](/en/reference/configuration-reference/#buildformat)
+- [`site`](/en/reference/configuration-reference/#site)
+
+Also, note that the returned URLs created by these functions for your `defaultLocale` will reflect your `i18n.routing` configuration.
+
+For features and usage examples, [see our i18n routing guide](/en/guides/internationalization/).
+
+### `getRelativeLocaleUrl()` 
+
+<p>
+
+**Type:** `(locale: string, path?: string,  options?: GetLocaleOptions) => string`
+</p>
+
+Use this function to retrieve a relative path for a locale. If the locale doesn't exist, Astro throws an error. 
+
+```astro
+---
+getRelativeLocaleUrl("fr");
+// returns /fr
+
+getRelativeLocaleUrl("fr", "");
+// returns /fr
+
+getRelativeLocaleUrl("fr", "getting-started");
+// returns /fr/getting-started
+
+getRelativeLocaleUrl("fr_CA", "getting-started", {
+  prependWith: "blog"
+}); 
+// returns /blog/fr-ca/getting-started
+
+getRelativeLocaleUrl("fr_CA", "getting-started", {
+  prependWith: "blog",
+  normalizeLocale: false
+}); 
+// returns /blog/fr_CA/getting-started
+---
+```
+
+### `getAbsoluteLocaleUrl()` 
+
+<p>
+
+**Type:** `(locale: string, path: string, options?: GetLocaleOptions) => string`
+</p>
+
+Use this function to retrieve an absolute path for a locale when [`site`] has a value. If [`site`] isn't configured, the function returns a relative URL. If the locale doesn't exist, Astro throws an error.
+
+
+```astro title="src/pages/index.astro"
+---
+// If `site` is set to be `https://example.com`
+
+getAbsoluteLocaleUrl("fr"); 
+// returns https://example.com/fr
+
+getAbsoluteLocaleUrl("fr", ""); 
+// returns https://example.com/fr
+
+getAbsoluteLocaleUrl("fr", "getting-started"); 
+// returns https://example.com/fr/getting-started
+
+getAbsoluteLocaleUrl("fr_CA", "getting-started", {
+  prependWith: "blog"
+}); 
+// returns https://example.com/blog/fr-ca/getting-started
+
+getAbsoluteLocaleUrl("fr_CA", "getting-started", {
+  prependWith: "blog",
+  normalizeLocale: false
+}); 
+// returns https://example.com/blog/fr_CA/getting-started
+---
+```
+ 
+### `getRelativeLocaleUrlList()` 
+
+<p>
+
+**Type:** `(path?: string, options?: GetLocaleOptions) => string[]`
+</p>
+
+Use this like [`getRelativeLocaleUrl`](#getrelativelocaleurl) to return a list of relative paths for all the locales.
+
+
+### `getAbsoluteLocaleUrlList()` 
+
+<p>
+
+**Type:** `(path?: string, options?: GetLocaleOptions) => string[]`
+</p>
+
+Use this like [`getAbsoluteLocaleUrl`](/en/guides/internationalization/#custom-locale-paths) to return a list of absolute paths for all the locales.
+
+### `getPathByLocale()` 
+
+<p>
+
+**Type:** `(locale: string) => string`
+</p>
+
+A function that returns the `path` associated to one or more `codes` when [custom locale paths](/en/guides/internationalization/#custom-locale-paths) are configured.
+
+```js title="astro.config.mjs"
+export default defineConfig({
+  i18n: {
+    locales: ["es", "en", {
+      path: "french",
+      codes: ["fr", "fr-BR", "fr-CA"]
+    }]
+  }
+})
+```
+
+```astro title="src/pages/index.astro"
+---
+getPathByLocale("fr"); // returns "french"
+getPathByLocale("fr-CA"); // returns "french"
+---
+```
+
+### `getLocaleByPath()`
+
+<p>
+
+**Type:** `(path: string) => string`
+</p>
+
+A function that returns the `code` associated to a locale `path`.
+
+```js title="astro.config.mjs"
+export default defineConfig({
+  i18n: {
+    locales: ["es", "en", {
+      path: "french",
+      codes: ["fr", "fr-BR", "fr-CA"]
+    }]
+  }
+})
+```
+
+```astro title="src/pages/index.astro"
+---
+getLocaleByPath("french"); // returns "fr" because that's the first code configured
+---
+```
+
+### `redirectToDefaultLocale()`
+
+<p>
+
+**Type:** `(context: APIContext, statusCode?: ValidRedirectStatus) => Promise<Response>`<br />
+<Since v="4.6.0" />
+</p>
+
+:::note
+Available only when `i18n.routing` is set to `"manual"`
+:::
+
+A function that returns a `Response` that redirects to the `defaultLocale` configured. It accepts an optional valid redirect status code.
+
+```js title="middleware.js"
+import { defineMiddleware } from "astro:middleware";
+import { redirectToDefaultLocale } from "astro:i18n";
+
+export const onRequest = defineMiddleware((context, next) => {
+  if (context.url.pathname.startsWith("/about")) {
+    return next();
+  } else {
+    return redirectToDefaultLocale(context, 302);
+  }
+})
+```
+
+### `redirectToFallback()`
+
+<p>
+
+**Type:** `(context: APIContext, response: Response) => Promise<Response>`<br />
+<Since v="4.6.0" />
+</p>
+
+:::note
+Available only when `i18n.routing` is set to `"manual"`
+:::
+
+A function that allows you to use your [`i18n.fallback` configuration](/en/reference/configuration-reference/#i18nfallback) in your own middleware.
+
+```js title="middleware.js"
+import { defineMiddleware } from "astro:middleware";
+import { redirectToFallback } from "astro:i18n";
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  const response = await next();
+  if (response.status >= 300) {
+    return redirectToFallback(context, response)
+  }
+  return response;
+})
+```
+
+### `notFound()`
+
+<p>
+
+**Type:** `(context: APIContext, response?: Response) => Promise<Response> | undefined`<br />
+<Since v="4.6.0" />
+</p>
+
+:::note
+Available only when `i18n.routing` is set to `"manual"`
+:::
+
+Use this function in your routing middleware to return a 404 when:
+- the current path isn't a root. e.g. `/` or `/<base>`
+- the URL doesn't contain a locale
+
+When a `Response` is passed, the new `Response` emitted by this function will contain the same headers of the original response.
+
+```js title="middleware.js"
+import { defineMiddleware } from "astro:middleware";
+import { notFound } from "astro:i18n";
+
+export const onRequest = defineMiddleware((context, next) => {
+  const pathNotFound = notFound(context);
+  if (pathNotFound) {
+    return pathNotFound;
+  }
+  return next();
+})
+```
+
+### `middleware()`
+
+<p>
+
+**Type:** `(options: { prefixDefaultLocale: boolean, redirectToDefaultLocale: boolean }) => MiddlewareHandler`<br />
+<Since v="4.6.0" />
+</p>
+
+:::note
+Available only when `i18n.routing` is set to `"manual"`
+:::
+
+A function that allows you to programmatically create the Astro i18n middleware.
+
+This is use useful when you still want to use the default i18n logic, but add only a few exceptions to your website.
+
+```js title="middleware.js"
+import { middleware } from "astro:i18n";
+import { sequence, defineMiddleware } from "astro:middleware";
+
+const customLogic = defineMiddleware(async (context, next) => {
+  const response = await next();
+
+  // Custom logic after resolving the response.
+  // It's possible to catch the response coming from Astro i18n middleware.
+
+  return response;
+});
+
+export const onRequest = sequence(customLogic, middleware({
+	prefixDefaultLocale: true,
+	redirectToDefaultLocale: false
+}))
+```
+
+### `requestHasLocale()`
+
+<p>
+
+**Type:** `(context: APIContext) => boolean`<br />
+<Since v="4.6.0" />
+</p>
+
+:::note
+Available only when `i18n.routing` is set to `"manual"`
+:::
+
+Checks whether the current URL contains a configured locale. Internally, this function will use `APIContext#url.pathname`.
+
+```js title="middleware.js"
+import { defineMiddleware } from "astro:middleware";
+import { requestHasLocale } from "astro:i18n";
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  if (requestHasLocale(context)) {
+    return next();
+  }
+  return new Response("Not found", { status: 404 });
+})
+```
+
+## View Transitions Router API (`astro:transitions/client`)
+
+<p><Since v="3.2.0" /></p>
+
+:::note
+This API is compatible with the `<ClientRouter />` included in `astro:transitions`, but can't be used with native browser MPA routing.
+:::
+
+This module provides functions to control and interact with the View Transitions API and client-side router.
+
+For features and usage examples, [see our View Transitions guide](/en/guides/view-transitions/).
+
+### `navigate()`
+
+<p>
+
+**Type:** `(href: string, options?: Options) => void`<br />
+<Since v="3.2.0" />
+</p>
+
+A function that executes a navigation to the given `href` using the View Transitions API.
+
+This function signature is based on the [`navigate` function from the browser Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigate). Although based on the Navigation API, this function is implemented on top of the [History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) to allow for navigation without reloading the page.
+
+#### `history` option
+
+<p>
+
+**Type:** `'auto' | 'push' | 'replace'`<br />
+**Default:** `'auto'`<br />
+<Since v="3.2.0" />
+</p>
+
+Defines how this navigation should be added to the browser history.
+
+- `'push'`: the router will use `history.pushState` to create a new entry in the browser history.
+- `'replace'`: the router will use `history.replaceState` to update the URL without adding a new entry into navigation.
+- `'auto'` (default): the router will attempt `history.pushState`, but if the URL cannot be transitioned to, the current URL will remain with no changes to the browser history.
+
+This option follows the [`history` option](https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigate#history) from the browser Navigation API but simplified for the cases that can happen on an Astro project.
+
+#### `formData` option
+
+<p>
+
+**Type:** `FormData`<br />
+<Since v="3.5.0" />
+</p>
+
+A `FormData` object for `POST` requests.
+
+When this option is provided, the requests to the navigation target page will be sent as a `POST` request with the form data object as the content.
+
+Submitting an HTML form with view transitions enabled will use this method instead of the default navigation with page reload. Calling this method allows triggering the same behavior programmatically.
+
+#### `info` option
+
+<p>
+
+**Type:** `any`<br />
+<Since v="3.6.0" />
+</p>
+
+Arbitrary data to be included in the `astro:before-preparation` and `astro:before-swap` events caused by this navigation.
+
+This option mimics the [`info` option](https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigate#info) from the browser Navigation API.
+
+#### `state` option
+
+<p>
+
+**Type:** `any`<br />
+<Since v="3.6.0" />
+</p>
+
+Arbitrary data to be associated with the `NavitationHistoryEntry` object created by this navigation. This data can then be retrieved using the [`history.getState` function](https://developer.mozilla.org/en-US/docs/Web/API/NavigationHistoryEntry/getState) from the History API.
+
+This option mimics the [`state` option](https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigate#state) from the browser Navigation API.
+
+#### `sourceElement` option
+
+<p>
+
+**Type:** `Element`<br />
+<Since v="3.6.0" />
+</p>
+
+The element that triggered this navigation, if any. This element will be available in the following events:
+- `astro:before-preparation`
+- `astro:before-swap`
+
+### `supportsViewTransitions`
+
+<p>
+
+**Type:** `boolean`<br />
+<Since v="3.2.0" />
+</p>
+
+Whether or not view transitions are supported and enabled in the current browser.
+
+### `transitionEnabledOnThisPage`
+
+<p>
+
+**Type:** `boolean`<br />
+<Since v="3.2.0" />
+</p>
+
+Whether or not the current page has view transitions enabled for client-side navigation. This can be used to make components that behave differently when they are used on pages with view transitions.
+
+### `getFallback`
+
+<p>
+
+**Type:** `() => 'none' | 'animate' | 'swap'`<br />
+<Since v="3.6.0" />
+</p>
+
+Returns the fallback strategy to use in browsers that do not support view transitions.
+
+See the guide on [Fallback control](/en/guides/view-transitions/#fallback-control) for how to choose and configure the fallback behavior.
+
+
+### `astro:before-preparation` event
+
+An event dispatched at the beginning of a navigation using the View Transitions router. This event happens before any request is made and any browser state is changed.
+
+This event has the attributes:
+- [`info`](#info)
+- [`sourceElement`](#sourceelement)
+- [`navigationType`](#navigationtype)
+- [`direction`](#direction)
+- [`from`](#from)
+- [`to`](#to)
+- [`formData`](#formdata)
+- [`loader`](#loader)
+
+Read more about how to use this event on the [View Transitions guide](/en/guides/view-transitions/#astrobefore-preparation).
+
+### `astro:after-preparation` event
+
+An event dispatched after the next page in a navigation using View Transitions router is loaded.
+
+This event has no attributes.
+
+Read more about how to use this event on the [View Transitions guide](/en/guides/view-transitions/#astroafter-preparation).
+
+### `astro:before-swap` event
+
+An event dispatched after the next page is parsed, prepared, and linked into a document in preparation for the transition but before any content is swapped between the documents.
+
+This event can't be canceled. Calling `preventDefault()` is a no-op.
+
+This event has the attributes:
+- [`info`](#info)
+- [`sourceElement`](#sourceelement)
+- [`navigationType`](#navigationtype)
+- [`direction`](#direction)
+- [`from`](#from)
+- [`to`](#to)
+- [`viewTransition`](#viewtransition)
+- [`swap`](#swap)
+
+Read more about how to use this event on the [View Transitions guide](/en/guides/view-transitions/#astrobefore-swap).
+
+### `astro:after-swap` event
+
+An event dispatched after the contents of the page have been swapped but before the view transition ends.
+
+The history entry and scroll position have already been updated when this event is triggered.
+
+### `astro:page-load` event
+
+An event dispatched after a page completes loading, whether from a navigation using view transitions or native to the browser.
+
+When view transitions is enabled on the page, code that would normally execute on `DOMContentLoaded` should be changed to execute on this event.
+
+### View Transitions events attributes
+
+<p><Since v="3.6.0" /></p>
+
+#### `info`
+
+<p>
+
+**Type:** `URL`
+</p>
+
+Arbitrary data defined during navigation.
+
+This is the literal value passed on the [`info` option](#info-option) of the [`navigate()` function](#navigate).
+
+#### `sourceElement`
+
+<p>
+
+**Type:** `Element | undefined`
+</p>
+
+The element that triggered the navigation. This can be, for example, an `<a>` element that was clicked.
+
+When using the [`navigate()` function](#navigate), this will be the element specified in the call.
+
+#### `newDocument`
+
+<p>
+
+**Type:** `Document`
+</p>
+
+The document for the next page in the navigation. The contents of this document will be swapped in place of the contents of the current document.
+
+#### `navigationType`
+
+<p>
+
+**Type:** `'push' | 'replace' | 'traverse'`
+</p>
+
+Which kind of history navigation is happening.
+- `push`: a new `NavigationHistoryEntry` is being created for the new page.
+- `replace`: the current `NavigationHistoryEntry` is being replaced with an entry for the new page.
+- `traverse`: no `NavigationHistoryEntry` is created. The position in the history is changing.
+  The direction of the traversal is given on the [`direction` attribute](#direction)
+
+#### `direction`
+
+<p>
+
+**Type:** `Direction`
+</p>
+
+The direction of the transition.
+- `forward`: navigating to the next page in the history or to a new page.
+- `back`: navigating to the previous page in the history.
+- Anything else some other listener might have set.
+
+#### `from`
+
+<p>
+
+**Type:** `URL`
+</p>
+
+The URL of the page initiating the navigation.
+
+#### `to`
+
+<p>
+
+**Type:** `URL`
+</p>
+
+The URL of the page being navigated to. This property can be modified, the value at the end of the lifecycle will be used in the `NavigationHistoryEntry` for the next page.
+
+#### `formData`
+
+<p>
+
+**Type:** `FormData | undefined`
+</p>
+
+A `FormData` object for `POST` requests.
+
+When this attribute is set, a `POST` request will be sent to the [`to` URL](#to) with the given form data object as the content instead of the normal `GET` request.
+
+When submitting an HTML form with view transitions enabled, this field is automatically set to the data in the form. When using the [`navigate()` function](#navigate), this value is the same as given in the options.
+
+#### `loader`
+
+<p>
+
+**Type:** `() => Promise<void>`
+</p>
+
+Implementation of the following phase in the navigation (loading the next page). This implementation can be overridden to add extra behavior.
+
+#### `viewTransition`
+
+<p>
+
+**Type:** [`ViewTransition`](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition)
+</p>
+
+The view transition object used in this navigation. On browsers that do not support the [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API), this is an object implementing the same API for convenience but without the DOM integration.
+
+#### `swap`
+
+<p>
+
+**Type:** `() => void`
+</p>
+
+Implementation of the document swap logic. 
+
+Read more on how to [build your own custom swap function](/en/guides/view-transitions/#building-a-custom-swap-function) on the View Transitions guide.
+
+By default, this implementation will call the following functions in order:
+
+##### `deselectScripts()`
+
+<p>
+
+**Type:** `(newDocument: Document) => void`
+</p>
+
+Marks scripts in the new document that should not be executed. Those scripts are already in the current document and are not flagged for re-execution using [`data-astro-rerun`](/en/guides/view-transitions/#data-astro-rerun).
+
+##### `swapRootAttributes()`
+
+<p>
+
+**Type:** `(newDocument: Document) => void`
+</p>
+
+Swaps the attributes between the document roots, like the `lang` attribute. This also includes Astro-injected internal attributes like `data-astro-transition`, which makes the transition direction available to Astro-generated CSS rules.
+
+When making a custom swap function, it is important to call this function so as not to break the view transition's animations.
+
+##### `swapHeadElements()`
+
+<p>
+
+**Type:** `(newDocument: Document) => void`
+</p>
+
+Removes every element from the current document's `<head>` that is not persisted to the new document. Then appends all new elements from the new document's `<head>` to the current document's `<head>`.
+
+##### `saveFocus()`
+
+<p>
+
+**Type:** `() => () => void`
+</p>
+
+Stores the element in focus on the current page and returns a function that when called, if the focused element was persisted, returns the focus to it.
+
+
+##### `swapBodyElements()`
+
+<p>
+
+**Type:** `(newBody: Element, oldBody: Element) => void`
+</p>
+
+Replaces the old body with the new body. Then, goes through every element in the old body that should be persisted and have a matching element in the new body and swaps the old element back in place.
+
+## Actions (`astro:actions`)
+
+<p>
+<Since v="4.15.0" />
+</p>
+
+Actions help you build a type-safe backend you can call from client code and HTML forms. All utilities to define and call actions are exposed by the `astro:actions` module. For examples and usage instructions, [see the Actions guide](/en/guides/actions/).
+
+### `defineAction()`
+
+<p>
+<Since v="4.15.0" />
+</p>
+
+The `defineAction()` utility is used to define new actions from the `src/actions/index.ts` file. This accepts a [`handler()`](#handler-property) function containing the server logic to run, and an optional [`input`](#input-validator) property to validate input parameters at runtime.
+
+```ts
+export const server = {
+  getGreeting: defineAction({
+    input: z.object({
+      name: z.string(),
+    }),
+    handler: async (input, context) => {
+      return `Hello, ${input.name}!`
+    }
+  })
+}
+```
+
+#### `handler()` property
+
+<p>
+
+**Type:** `(input, context) => any`
+</p>
+
+`defineAction()` requires a `handler()` function containing the server logic to run when the action is called. Data returned from the handler is automatically serialized and sent to the caller.
+
+The `handler()` is called with user input as its first argument. If an [`input`](#input-validator) validator is set, the user input will be validated before being passed to the handler. The second argument is a `context` object containing most of Astro’s [standard endpoint context](#endpoint-context), excluding  `getActionResult()`, `callAction()`, and `redirect()`.
+
+Return values are parsed using the [devalue library](https://github.com/Rich-Harris/devalue). This supports JSON values and instances of `Date()`, `Map()`, `Set()`, and `URL()`.
+
+#### `input` validator
+
+<p>
+
+**Type:** `ZodType | undefined`
+</p>
+
+The optional `input` property accepts a Zod validator (e.g. Zod object, Zod discriminated union) to validate handler inputs at runtime. If the action fails to validate, [a `BAD_REQUEST` error](#actionerror) is returned and the `handler` is not called.
+
+If `input` is omitted, the `handler` will receive an input of type `unknown` for JSON requests and type `FormData` for form requests.
+
+##### Use with `accept: 'form'`
+
+If your action accepts form inputs, use the `z.object()` validator to automatically parse form data to a typed object. The following validators are supported for form data fields:
+
+- Inputs of type `number` can be validated using `z.number()`
+- Inputs of type `checkbox` can be validated using `z.boolean()`
+- Inputs of type `file` can be validated using `z.instanceof(File)`
+- Multiple inputs of the same `name` can be validated using `z.array(/* validator */)`
+- All other inputs can be validated using `z.string()`
+
+Extension functions including `.refine()`, `.transform()`, and `.pipe()` are also supported on the `z.object()` validator.
+
+To apply a union of different validators, use the `z.discriminatedUnion()` wrapper to narrow the type based on a specific form field. This example accepts a form submission to either "create" or "update" a user, using the form field with the name `type` to determine which object to validate against:
+
+```ts
+import { defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+
+export const server = {
+  changeUser: defineAction({
+    accept: 'form',
+    input: z.discriminatedUnion('type', [
+      z.object({
+        // Matches when the `type` field has the value `create`
+        type: z.literal('create'),
+        name: z.string(),
+        email: z.string().email(),
+      }),
+      z.object({
+        // Matches when the `type` field has the value `update`
+        type: z.literal('update'),
+        id: z.number(),
+        name: z.string(),
+        email: z.string().email(),
+      }),
+    ]),
+    async handler(input) {
+      if (input.type === 'create') {
+        // input is { type: 'create', name: string, email: string }
+      } else {
+        // input is { type: 'update', id: number, name: string, email: string }
+      }
+    },
+  }),
+};
+```
+
+### `isInputError()`
+
+<p>
+
+**Type:** <code>(error?: unknown | <a href="#actionerror">ActionError</a>) => boolean</code><br/>
+<Since v="4.15.0" />
+</p>
+
+The `isInputError()` utility is used to check whether an `ActionError` is an input validation error. When the `input` validator is a `z.object()`, input errors include a `fields` object with error messages grouped by name.
+
+<ReadMore>See the [form input errors guide](/en/guides/actions/#displaying-form-input-errors) for more on using `isInputError()`.</ReadMore>
+
+### `ActionError`
+
+<p>
+<Since v="4.15.0" />
+</p>
+
+The `ActionError()` constructor is used to create errors thrown by an action `handler`. This accepts a `code` property describing the error that occurred (example: `"UNAUTHORIZED"`), and an optional `message` property with further details.
+
+#### `code`
+
+<p>
+<Since v="4.15.0" />
+</p>
+
+The `code` property accepts human-readable versions of all HTTP status codes. The following codes are supported:
+
+- `BAD_REQUEST` (400): The client sent invalid input. This error is thrown when an action `input` validator fails to validate.
+- `UNAUTHORIZED` (401): The client lacks valid authentication credentials.
+- `FORBIDDEN` (403): The client is not authorized to access a resource.
+- `NOT_FOUND` (404): The server cannot find the requested resource.
+- `METHOD_NOT_SUPPORTED` (405): The server does not support the requested method.
+- `TIMEOUT` (408): The server timed out while processing the request.
+- `CONFLICT` (409): The server cannot update a resource due to a conflict.
+- `PRECONDITION_FAILED` (412): The server does not meet a precondition of the request.
+- `PAYLOAD_TOO_LARGE` (413): The server cannot process the request because the payload is too large.
+- `UNSUPPORTED_MEDIA_TYPE` (415): The server does not support the request's media type. Note: Actions already check [the `Content-Type` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type) for JSON and form requests, so you likely won't need to raise this code manually.
+- `UNPROCESSABLE_CONTENT` (422): The server cannot process the request due to semantic errors.
+- `TOO_MANY_REQUESTS` (429): The server has exceeded a specified rate limit.
+- `CLIENT_CLOSED_REQUEST` (499): The client closed the request before the server could respond.
+- `INTERNAL_SERVER_ERROR` (500): The server failed unexpectedly.
+- `NOT_IMPLEMENTED` (501): The server does not support the requested feature.
+- `BAD_GATEWAY` (502): The server received an invalid response from an upstream server.
+- `SERVICE_UNAVAILABLE` (503): The server is temporarily unavailable.
+- `GATEWAY_TIMEOUT` (504): The server received a timeout from an upstream server.
+
+#### `message`
+
+<p>
+<Since v="4.15.0" />
+</p>
+
+The `message` property accepts a string. (e.g. "User must be logged in.")
+
+## Environment variables (`astro:env`)
+
+<p>
+<Since v="5.0.0" />
+</p>
+
+The `astro:env` API lets you configure a type-safe schema for environment variables you have set. This allows you to indicate whether they should be available on the server or the client, and define their data type and additional properties. For examples and usage instructions, [see the `astro:env` guide](/en/guides/environment-variables/#type-safe-environment-variables).
+
+### `getSecret()`
+
+<p>
+<Since v="5.0.0" />
+</p>
+
+The `getSecret()` helper function allows retrieving the raw value of an environment variable by its key.
+
+For example, you can retrieve a boolean value as a string:
+
+```js
+import {
+  FEATURE_FLAG, // boolean
+  getSecret
+} from 'astro:env/server'
+
+getSecret('FEATURE_FLAG') // string | undefined
+```
+
+This can also be useful to get a secret depending on dynamic data, such as from a database or API.
+
+If you need to retrieve environment variables programmatically, we recommend using `getSecret()` instead of `process.env` (or equivalent). Because its implementation is provided by your adapter, you won't need to update all your calls if you switch adapters. It defaults to `process.env` in dev and build.
+
+[canonical]: https://en.wikipedia.org/wiki/Canonical_link_element
