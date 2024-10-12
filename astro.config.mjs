@@ -84,9 +84,10 @@ export default defineConfig({
 				},
 				{
 					label: 'Guides',
-					link: '/guides/markdown-content/',
+					link: 'upgrade-astro',
 					icon: 'open-book',
 					items: [
+					  { label: "Upgrade Astro", slug: 'upgrade-astro' },
 					
 					  {
 						label: 'Build with Astro',
@@ -174,7 +175,7 @@ export default defineConfig({
 					icon: 'seti:info',
 					items: [
 						// Each item here is one entry in the navigation menu.
-						{ label: "Upgrade Astro", slug: 'upgrade-astro' },
+						
 						{ label:"User Reference", items: [
 							{ label: "Configuration Reference", slug: 'reference/configuration-reference' },
 							{ label: "Astro CLI Reference", slug: 'reference/cli-reference' },
