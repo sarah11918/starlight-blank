@@ -3,8 +3,8 @@ title: TypeScript
 description: Learn how to use Astro's built-in TypeScript support.
 i18nReady: true
 ---
-import Since from '~/components/Since.astro'
-import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro'
+import Since from '../../../components/Since.astro'
+import PackageManagerTabs from '../../../components/tabs/PackageManagerTabs.astro'
 
 Astro ships with built-in support for [TypeScript](https://www.typescriptlang.org/). You can import `.ts` and `.tsx` files in your Astro project, write TypeScript code directly inside your [Astro component](/en/basics/astro-components/#the-component-script), and even use an [`astro.config.ts`](/en/guides/configuring-astro/#the-astro-config-file) file if you like.
 
@@ -313,7 +313,7 @@ To see type errors in your editor, please make sure that you have the [Astro VS 
 `astro check` checks all the files included in your TypeScript project. To check types within Svelte and Vue files, you can use the [`svelte-check`](https://www.npmjs.com/package/svelte-check) and the [`vue-tsc`](https://www.npmjs.com/package/vue-tsc) packages respectively.
 :::
 
-import ReadMore from '~/components/ReadMore.astro'
+import ReadMore from '../../../components/ReadMore.astro'
 
 <ReadMore>Read more about [`.ts` file imports](/en/guides/imports/#typescript) in Astro.</ReadMore>
 

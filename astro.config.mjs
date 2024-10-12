@@ -29,35 +29,36 @@ export default defineConfig({
 					items: [
 						// Each item here is one entry in the navigation menu.
 						
-						{ label: "Why Astro?", link:'concepts/example'},
+						{ label: "Why Astro?", link:'why-astro'},
 
 						{ label:"Getting Started", items: [
 							
-							{ label: "Installation", slug: 'basics/example' },
-							{ label: "Project Structure", link:'concepts/example'},
-							{ label: "Deploy Your Site", slug: 'basics/example' },
-							{ label: "Migrate to Astro", slug: 'basics/example' },
-							{ label: "Tutorial: Build a Blog", slug: 'basics/example' },
+							{ label: "Installation", slug: 'install-and-setup' },
+							{ label: "Project Structure", link:'basics/project-structure'},
+							{ label: "Deploy Your Site", slug: 'guides/deploy' },
+							{ label: "Migrate to Astro", slug: 'guides/migrate-to-astro' },
+							{ label: "Tutorial: Build a Blog", slug: 'tutorial' },
 							],
 						},
 						{
 							label: 'Configuration',
 							items: [
-							{label: "The Astro Config File", link:'basics/example'},
-							{label: "Editor setup", link:'basics/example'},
-							{label: "TypeScript", link:'basics/example'},
-							{label: "Environment variables", link:'basics/example'},
-							{label: "Dev Toolbar", link:'basics/example'},
+							{label: "The Astro Config File", link:'guides/configuring-astro'},
+							{label: "Editor setup", link:'editor-setup'},
+							{label: "TypeScript", link:'guides/typescript'},
+							{label: "Environment variables", link:'guides/environment-variables'},
+							{label: "Dev Toolbar", link:'guides/dev-toolbar'},
 							],
 						},
 						{
 							label: 'Core Concepts',
 							items: [
 								
-								{ label: "Astro Islands", link:'concepts/example'},
-								{ label: "Components", link:'concepts/example'},
-								{ label: "Pages", link:'concepts/example'},
-								{ label: "Astro Template Syntax", link:'concepts/example'},
+								{ label: "Astro Islands", link:'basics/islands'},
+								{ label: "Components", link:'basics/astro-components'},
+								{ label: "Pages", link:'basics/astro-pages'},
+								{ label: "Layouts", link:'basics/layouts'},
+								{ label: "Astro Template Syntax", link:'basics/astro-syntax'},
 								
 								
 							],
@@ -68,17 +69,17 @@ export default defineConfig({
 								{
 									label: 'Popular Integrations',
 									items: [
-										{label: "Tailwind", link:'basics/example'},	
-										{label: "React", link:'basics/example'},
-										{label: "Sitemap", link:'basics/example'},
-										{label: "MDX", link:'basics/example'},
+										{label: "Tailwind", link:'guides/integration/tailwind'},	
+										{label: "React", link:'guides/integration/react'},
+										{label: "Sitemap", link:'guides/integration/sitemap'},
+										{label: "MDX", link:'guides/integration/mdx'},
 									],
 								},
-								{label: "Integrations Guide", link:'basics/example'},
+								{label: "Integrations Guide", link:'guides/integrations-guide'},
 							],
 						},
 						  							
-						 { label: "Community", slug: 'basics/example' },
+						 { label: "Community", slug: 'astro-community' },
 					],
 				},
 				{

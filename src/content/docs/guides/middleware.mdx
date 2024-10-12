@@ -3,9 +3,9 @@ title: Middleware
 description: Learn how to use middleware in Astro.
 i18nReady: true
 ---
-import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro';
+import PackageManagerTabs from '../../../components/tabs/PackageManagerTabs.astro';
 import { Steps } from '@astrojs/starlight/components';
-import Since from '~/components/Since.astro';
+import Since from '../../../components/Since.astro';
 
 **Middleware** allows you to intercept requests and responses and inject behaviors dynamically every time a page or endpoint is about to be rendered. This rendering occurs at build time for all prerendered pages, but occurs when the route is requested for pages rendered on demand, making [additional SSR features like cookies and headers](/en/guides/on-demand-rendering/#on-demand-rendering-features) available.
 
