@@ -11,14 +11,9 @@ export default defineConfig({
 			social: {
 				github: 'https://github.com/sarah11918/starlight-blank/tree/vertical-links',
 			},
-			// plugins: [
-			// 	starlightUtils({
-			// 	  multiSidebar: {
-			// 		switcherStyle: "horizontalList",
-			// 	  },
-			// 	}),
-			//   ],
-			// sidebar: [
+			customCss: [
+				'./src/styles/custom.css',
+			  ],
 				plugins: [
 					starlightSidebarTopics([
 				
