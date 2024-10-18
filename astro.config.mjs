@@ -202,6 +202,7 @@ export default defineConfig({
 							label: 'CMS guides',
 							collapsed: true,
 							items: [
+								{label: "CMS guides", link:'guides/cms'},	
 								{label: "Storyblok", link:'guides/third-party/storyblok'},	
 								{label: "Cloudinary", link:'guides/third-party/cloudinary'},
 								{label: "Sentry", link:'guides/third-party/sentry'},
@@ -244,6 +245,7 @@ export default defineConfig({
 							label: 'Backend Services',
 							collapsed: true,
 							items: [
+								{label: "Backend guides", link:'guides/backend'},
 								{label: "Storyblok", link:'guides/third-party/storyblok'},	
 								{label: "Cloudinary", link:'guides/third-party/cloudinary'},
 								{label: "Sentry", link:'guides/third-party/sentry'},
@@ -257,6 +259,7 @@ export default defineConfig({
 							label: 'Hosted Media & DAM',
 							collapsed: true,
 							items: [
+								{label: "Media guides", link:'guides/media'},
 								{label: "Storyblok", link:'guides/third-party/storyblok'},	
 								{label: "Cloudinary", link:'guides/third-party/cloudinary'},
 								{label: "Sentry", link:'guides/third-party/sentry'},
