@@ -62,52 +62,44 @@ export default defineConfig({
 					link: 'upgrade-astro',
 					icon: 'open-book',
 					items: [
-					  { label: "Upgrade Astro", slug: 'upgrade-astro' },
-					
-					  {
-						label: 'Build with Astro',
-						items: [
-							{ label:"Add content to your site", collapsed:true, items: [
-								{ label: "Markdown", slug: 'guides/markdown-content' },
-								{ label: "Content Collections", link:'guides/content-collections'},
-								{ label: "Images", slug: 'guides/images' },
-								{ label: "Data Fetching", link:'guides/data-fetching'},
-								{ label: "Astro DB", link:'guides/astro-db'},
-								],
-							},
-							{ label:"Build your UI", collapsed:true, items: [
-								
-								{ label: "CSS & Styling", slug: 'guides/styling' },
-								{ label: "Fonts", link:'guides/fonts'},				
-								{ label: "Scripts & Event Handling", slug: 'guides/client-side-scripts' },
-								{ label: "UI Frameworks", slug: 'guides/framework-components' },
-								{ label: "Built-in Components", slug: 'reference/components-reference' },
-								],
-							},
-							{ label:"Routing and Navigation", collapsed:true, items: [
-								
-								{ label: "Routing", slug: 'guides/routing' },
-								{ label: "Endpoints", link:'guides/endpoints'},
-								{ label: "Prefetch", link:'guides/prefetch'},
-								{ label: "View Transitions", link:'guides/view-transitions'},
-								{ label: "Internationalization", link:'guides/internationalization'},
-								],
-							},
-							{ label:"On-demand Rendering", collapsed:true, items: [
-								{ label: "Adding Adapters", link:'guides/on-demand-rendering'},
-								{ label: "Actions", link:'guides/actions'},
-								{ label: "Server Islands", link:'guides/server-islands'},
-								{ label: "Middleware", link:'guides/middleware'},
-								],
-							},
-							{ label: "Troubleshooting", link:'guides/troubleshooting'},
-						],
-					  },
-					  
-					  {
-						label: 'How-to Recipes',
-						items: [
+					    { label: "Upgrade Astro", slug: 'upgrade-astro' },
+						{ label:"Add content to your site", collapsed:true, items: [
+							{ label: "Markdown", slug: 'guides/markdown-content' },
+							{ label: "Content Collections", link:'guides/content-collections'},
+							{ label: "Images", slug: 'guides/images' },
+							{ label: "Data Fetching", link:'guides/data-fetching'},
+							{ label: "Astro DB", link:'guides/astro-db'},
+							],
+						},
+						{ label:"Build your UI", collapsed:true, items: [
 							
+							{ label: "CSS & Styling", slug: 'guides/styling' },
+							{ label: "Fonts", link:'guides/fonts'},				
+							{ label: "Scripts & Event Handling", slug: 'guides/client-side-scripts' },
+							{ label: "UI Frameworks", slug: 'guides/framework-components' },
+							{ label: "Built-in Components", slug: 'reference/components-reference' },
+							],
+						},
+						{ label:"Routing and Navigation", collapsed:true, items: [
+							
+							{ label: "Routing", slug: 'guides/routing' },
+							{ label: "Endpoints", link:'guides/endpoints'},
+							{ label: "Prefetch", link:'guides/prefetch'},
+							{ label: "View Transitions", link:'guides/view-transitions'},
+							{ label: "Internationalization", link:'guides/internationalization'},
+							],
+						},
+						{ label:"Server rendering", collapsed:true, items: [
+							{ label: "On-demand rendering adapters", link:'guides/on-demand-rendering'},
+							{ label: "Actions", link:'guides/actions'},
+							{ label: "Server Islands", link:'guides/server-islands'},
+							{ label: "Middleware", link:'guides/middleware'},
+							],
+						},
+						{ label: "Troubleshooting", link:'guides/troubleshooting'},
+						{
+							label: 'How-to Recipes',
+							items: [
 							{
 								label: 'Popular Recipes',
 								items: [
@@ -120,8 +112,8 @@ export default defineConfig({
 								],
 							},
 							{label: "All Recipes", link:'guides/how-to-recipes'},
-						],
-					  },
+							],
+					    },
 					],
 				},
 				{
