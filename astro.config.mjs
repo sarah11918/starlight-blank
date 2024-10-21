@@ -16,7 +16,7 @@ export default defineConfig({
 			  ],
 			plugins: [
 				starlightSidebarTopics([
-			
+				// Start
 				{
 				label: 'Start',
 				link: '/why-astro/',
@@ -57,6 +57,7 @@ export default defineConfig({
 					},							
 				],
 				},
+				// Guides
 				{
 					label: 'Guides and Recipes',
 					link: 'upgrade-astro',
@@ -116,6 +117,7 @@ export default defineConfig({
 					    },
 					],
 				},
+				//Reference
 				{
 					label: 'Reference',
 					link: '/reference/configuration-reference/',
@@ -158,6 +160,75 @@ export default defineConfig({
 						},
 					],
 				},
+				// Two Integrations Variations
+				// 1. Integrations more flat
+				// {
+				// 	label: 'Add Integrations',
+				// 	link: '/guides/integrations-guide/',
+				// 	icon: 'puzzle',
+				// 	items: [
+				// 		{ label: "Integrations Guide", link:'guides/integrations-guide'},
+				// 		{
+				// 			label: 'Popular Integrations',
+				// 			items: [
+				// 				{label: "Tailwind", link:'guides/integration/tailwind'},	
+				// 				{label: "React", link:'guides/integration/react'},
+				// 				{label: "Sitemap", link:'guides/integration/sitemap'},
+				// 				{label: "MDX", link:'guides/integration/mdx'},
+				// 			],
+				// 		},
+				// 		// {
+				// 		// 	label: 'More Official Integrations',
+				// 		// 	items: [
+				// 			// 	{label: "Tailwind", link:'guides/integration/tailwind'},	
+				// 			// 	{label: "React", link:'guides/integration/react'},
+				// 			// 	{label: "Sitemap", link:'guides/integration/sitemap'},
+				// 			// 	{label: "MDX", link:'guides/integration/mdx'},
+				// 			// 	{label: "Tailwind", link:'guides/integration/tailwind'},	
+				// 			// 	{label: "React", link:'guides/integration/react'},
+				// 			// 	{label: "Sitemap", link:'guides/integration/sitemap'},
+				// 			// 	{label: "MDX", link:'guides/integration/mdx'},
+				// 			// 	{label: "Tailwind", link:'guides/integration/tailwind'},	
+				// 			// 	{label: "React", link:'guides/integration/react'},
+				// 			// 	{label: "Sitemap", link:'guides/integration/sitemap'},
+				// 			// 	{label: "MDX", link:'guides/integration/mdx'},
+				// 			// ],
+				// 		// },
+				// 			{
+				// 				label: 'UI Frameworks',
+				// 				items: [
+				// 					{label: "Alpine", link:'guides/integration/tailwind'},
+				// 					{label: "Preact", link:'guides/integration/tailwind'},	
+				// 					{label: "React", link:'guides/integration/tailwind'},
+				// 					{label: "Solid", link:'guides/integration/mdx'},
+				// 					{label: "Svelte", link:'guides/integration/react'},
+				// 					{label: "Vue", link:'guides/integration/sitemap'},
+				// 				],
+				// 			},
+				// 			{
+				// 				label: 'Adapters',
+				// 				items: [
+				// 					{label: "Cloudflare", link:'guides/integration/sitemap'},
+				// 					{label: "Netlify", link:'guides/integration/tailwind'},
+				// 					{label: "Node", link:'guides/integration/tailwind'},	
+				// 					{label: "Vercel", link:'guides/integration/react'},
+				// 				],
+				// 			},	
+				// 			{
+				// 				label: 'Other official Integrations',
+				// 				items: [
+				// 					{label: "Astro DB", link:'guides/integration/tailwind'},
+				// 					{label: "Markdoc", link:'guides/integration/tailwind'},	
+				// 					{label: "MDX", link:'guides/integration/tailwind'},
+				// 					{label: "Partytown", link:'guides/integration/mdx'},
+				// 					{label: "Sitemap", link:'guides/integration/react'},
+				// 					{label: "Tailwind", link:'guides/integration/sitemap'},
+				// 				],
+				// 			},				
+				// 	],
+				// },
+
+				// 2. Integrations  more nested
 				{
 					label: 'Add Integrations',
 					link: '/guides/integrations-guide/',
@@ -173,7 +244,42 @@ export default defineConfig({
 								{label: "MDX", link:'guides/integration/mdx'},
 							],
 						},
-						{ label: "All integrations", link:'guides/integrations-guide'},						
+						{
+						 	label: 'More Official Integrations',
+						 	items: [
+							
+							{
+								label: 'UI Frameworks',
+								items: [
+									{label: "Alpine", link:'guides/integration/tailwind'},
+									{label: "Preact", link:'guides/integration/tailwind'},	
+									{label: "React", link:'guides/integration/tailwind'},
+									{label: "Solid", link:'guides/integration/mdx'},
+									{label: "Svelte", link:'guides/integration/react'},
+									{label: "Vue", link:'guides/integration/sitemap'},
+								],
+							},
+							{
+								label: 'Adapters',
+								items: [
+									{label: "Cloudflare", link:'guides/integration/sitemap'},
+									{label: "Netlify", link:'guides/integration/tailwind'},
+									{label: "Node", link:'guides/integration/tailwind'},	
+									{label: "Vercel", link:'guides/integration/react'},
+								],
+							},	
+							{
+								label: 'Other official Integrations',
+								items: [
+									{label: "Astro DB", link:'guides/integration/tailwind'},
+									{label: "Markdoc", link:'guides/integration/tailwind'},	
+									{label: "MDX", link:'guides/integration/tailwind'},
+									{label: "Partytown", link:'guides/integration/mdx'},
+									{label: "Sitemap", link:'guides/integration/react'},
+									{label: "Tailwind", link:'guides/integration/sitemap'},
+								],
+							},		
+						]},		
 					],
 				},
 				{
