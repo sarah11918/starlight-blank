@@ -19,9 +19,10 @@ export default defineConfig({
 				// Start
 				{
 				label: 'Start',
-				link: '/why-astro/',
+				link: '/getting-started/',
 				icon: 'rocket',
 				items: [
+					{ label: "Getting Started", slug: 'getting-started' },
 					{ label: "Why Astro?", link:'why-astro'},
 					{ label:"Getting Started", items: [
 						
@@ -60,9 +61,10 @@ export default defineConfig({
 				// Guides
 				{
 					label: 'Guides and Recipes',
-					link: 'upgrade-astro',
+					link: 'guides/guides-landing/',
 					icon: 'open-book',
 					items: [
+						{ label: "Guides landing page", slug: 'guides/guides-landing' },
 					    { label: "Upgrade Astro", slug: 'upgrade-astro' },
 						{ label:"Add content to your site", collapsed:true, items: [
 							{ label: "Markdown", slug: 'guides/markdown-content' },
@@ -120,12 +122,13 @@ export default defineConfig({
 				//Reference
 				{
 					label: 'Reference',
-					link: '/reference/configuration-reference/',
+					link: '/reference/reference-landing/',
 					icon: 'seti:info',
 					items: [
 						{ 
 							label:"User Reference",
 							items: [
+								{ label: "Reference landing page", slug: 'reference/reference-landing' },
 								{ label: "Configuration Reference", slug: 'reference/configuration-reference' },
 								{ label: "Astro CLI Reference", slug: 'reference/cli-reference' },
 								{ label: "Directives Reference", slug: 'reference/directives-reference' },
@@ -284,10 +287,10 @@ export default defineConfig({
 				},
 				{
 					label: 'Connect to third-party tools',
-					link: '/guides/cms/',
+					link: '/guides/third-party-landing/',
 					icon: 'seti:bicep',
 					items: [
-							
+						{ label: "3rd-party landing page", slug: 'guides/third-party-landing' },
 						{
 							label: 'Popular Third-party Guides',
 							items: [
